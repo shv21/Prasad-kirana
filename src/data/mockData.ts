@@ -23,7 +23,8 @@ export const initialStoreSettings: StoreSettings = {
   cspServicesInfo: "ग्राहक सेवा केंद्र (CSP Banking Point): आधार पेमेंट (AEPS), रोख पैसे भरणे/काढणे (Cash Deposit/Withdrawal), मायक्रो एटीएम (Micro ATM), मनी ट्रान्सफर (Money Transfer) आणि मिनी स्टेटमेंट सुविधा उपलब्ध.",
   announcementBar: "⚡ ३ स्वतंत्र सेवा: 🏦 ग्राहक सेवा केंद्र (CSP) | 🛒 किराणा दुकान | 🌾 अट्टा चक्की! 📍 झेड.पी. शाळा पाचोड खुर्द जवळ. Call/WhatsApp: 7499047152.",
   heroImageUrl: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80",
-  flourMillImageUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80"
+  flourMillImageUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80",
+  adminPin: "7499047152"
 };
 
 export const initialCategories: Category[] = [

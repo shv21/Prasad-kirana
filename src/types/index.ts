@@ -103,6 +103,7 @@ export interface StoreSettings {
   announcementBar: string;
   heroImageUrl?: string;
   flourMillImageUrl?: string;
+  adminPin?: string;
 }
 
 export interface ToastMessage {

@@ -271,7 +271,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const loginAdmin = (passcode: string) => {
-    if (passcode === 'admin123' || passcode === '7499047152') {
+    const validPin = settings.adminPin || '7499047152';
+    if (passcode === validPin || passcode === 'admin123' || passcode === '7499047152') {
       setIsAdminLoggedIn(true);
       setViewMode('admin');
       addToast('Welcome to Prasad Kirana Admin Dashboard!', 'success');

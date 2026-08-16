@@ -930,16 +930,90 @@ export const AdminDashboard: React.FC = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Google Maps Link URL
-                  </label>
-                  <input
-                    type="url"
-                    value={settingsForm.googleMapsUrl}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, googleMapsUrl: e.target.value })}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500"
-                  />
+                <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-3 border border-slate-800">
+                  <h4 className="font-extrabold text-xs uppercase tracking-wider text-amber-400">
+                    🔑 Security & Passcode Settings
+                  </h4>
+                  <div className="max-w-xs">
+                    <label className="block text-xs font-bold text-slate-300 mb-1">
+                      Admin Login Passcode / PIN *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={settingsForm.adminPin || '7499047152'}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, adminPin: e.target.value })}
+                      className="w-full px-3.5 py-2 text-sm bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-amber-400 font-bold"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">Default PIN is 7499047152. Change to your private PIN.</p>
+                  </div>
+                </div>
+
+                {/* Backup & Restore Panel */}
+                <div className="p-4 bg-slate-100 rounded-2xl space-y-3 border border-slate-200">
+                  <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-800">
+                    💾 Real-Life Store Data Backup & Transfer
+                  </h4>
+                  <p className="text-xs text-slate-600">
+                    Export your full inventory, categories, offers, and settings as a JSON backup file to transfer to another phone/laptop or keep a safe offline copy.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const data = {
+                          settings,
+                          products,
+                          categories,
+                          offers,
+                          orders,
+                          exportDate: new Date().toISOString()
+                        };
+                        const jsonStr = JSON.stringify(data, null, 2);
+                        const blob = new Blob([jsonStr], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `prasad_kirana_backup_${new Date().toISOString().slice(0, 10)}.json`;
+                        a.click();
+                      }}
+                      className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <span>📥 Download Backup (Export JSON)</span>
+                    </button>
+
+                    <label className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs cursor-pointer shadow-2xs">
+                      <span>📤 Restore Backup (Import JSON)</span>
+                      <input
+                        type="file"
+                        accept=".json"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            try {
+                              const parsed = JSON.parse(evt.target?.result as string);
+                              if (parsed.settings && parsed.products && parsed.categories) {
+                                localStorage.setItem('prasad_kirana_db_v1_settings', JSON.stringify(parsed.settings));
+                                localStorage.setItem('prasad_kirana_db_v1_products', JSON.stringify(parsed.products));
+                                localStorage.setItem('prasad_kirana_db_v1_categories', JSON.stringify(parsed.categories));
+                                if (parsed.offers) localStorage.setItem('prasad_kirana_db_v1_offers', JSON.stringify(parsed.offers));
+                                if (parsed.orders) localStorage.setItem('prasad_kirana_db_v1_orders', JSON.stringify(parsed.orders));
+                                window.location.reload();
+                              } else {
+                                alert('Invalid backup JSON file format!');
+                              }
+                            } catch (err) {
+                              alert('Error parsing JSON file!');
+                            }
+                          };
+                          reader.readAsText(file);
+                        }}
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 <div className="pt-4 flex items-center justify-between">
