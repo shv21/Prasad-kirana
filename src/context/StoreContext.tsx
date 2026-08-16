@@ -103,9 +103,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [offersOnly, setOffersOnly] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // 1. Initial Live Cloud Sync Fetch on Mount
+  const [isCloudLoaded, setIsCloudLoaded] = useState(false);
+
+  // 1. Initial Live Cloud Sync Fetch on Mount & Polling for Customer Devices
   useEffect(() => {
     let isMounted = true;
+
     async function loadCloudData() {
       const cloudData = await fetchCloudStoreData();
       if (cloudData && isMounted) {
@@ -115,15 +118,32 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (cloudData.offers) setOffers(cloudData.offers);
         if (cloudData.orders) setOrders(cloudData.orders);
       }
+      if (isMounted) {
+        setIsCloudLoaded(true);
+      }
     }
-    loadCloudData();
-    return () => { isMounted = false; };
-  }, []);
 
-  // 2. Realtime Push Cloud Sync & Local Storage Persistence
+    loadCloudData();
+
+    // Poll cloud database every 6 seconds on customer devices to show live admin updates automatically
+    const pollInterval = setInterval(() => {
+      if (!isAdminLoggedIn) {
+        loadCloudData();
+      }
+    }, 6000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(pollInterval);
+    };
+  }, [isAdminLoggedIn]);
+
+  // 2. Push Cloud Sync ONLY when Admin is logged in & Cloud Initial Fetch is Complete
   useEffect(() => {
-    syncStoreDataToCloud({ settings, categories, products, offers, orders });
-  }, [settings, categories, products, offers, orders]);
+    if (isCloudLoaded) {
+      syncStoreDataToCloud({ settings, categories, products, offers, orders });
+    }
+  }, [settings, categories, products, offers, orders, isCloudLoaded]);
 
   useEffect(() => {
     localStorage.setItem(`${LOCAL_STORAGE_KEY}_admin`, isAdminLoggedIn ? 'true' : 'false');
