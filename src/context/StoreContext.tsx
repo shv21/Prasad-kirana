@@ -105,18 +105,33 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [isCloudLoaded, setIsCloudLoaded] = useState(false);
 
-  // 1. Initial Live Cloud Sync Fetch on Mount & Polling for Customer Devices
+  // 1. Initial Live Cloud Sync Fetch on Mount & Auto-Polling for Customer Devices
   useEffect(() => {
     let isMounted = true;
 
     async function loadCloudData() {
       const cloudData = await fetchCloudStoreData();
       if (cloudData && isMounted) {
-        if (cloudData.settings) setSettings(cloudData.settings);
-        if (cloudData.categories) setCategories(cloudData.categories);
-        if (cloudData.products) setProducts(cloudData.products);
-        if (cloudData.offers) setOffers(cloudData.offers);
-        if (cloudData.orders) setOrders(cloudData.orders);
+        if (cloudData.settings) {
+          setSettings(cloudData.settings);
+          localStorage.setItem(`${LOCAL_STORAGE_KEY}_settings`, JSON.stringify(cloudData.settings));
+        }
+        if (cloudData.categories) {
+          setCategories(cloudData.categories);
+          localStorage.setItem(`${LOCAL_STORAGE_KEY}_categories`, JSON.stringify(cloudData.categories));
+        }
+        if (cloudData.products) {
+          setProducts(cloudData.products);
+          localStorage.setItem(`${LOCAL_STORAGE_KEY}_products`, JSON.stringify(cloudData.products));
+        }
+        if (cloudData.offers) {
+          setOffers(cloudData.offers);
+          localStorage.setItem(`${LOCAL_STORAGE_KEY}_offers`, JSON.stringify(cloudData.offers));
+        }
+        if (cloudData.orders) {
+          setOrders(cloudData.orders);
+          localStorage.setItem(`${LOCAL_STORAGE_KEY}_orders`, JSON.stringify(cloudData.orders));
+        }
       }
       if (isMounted) {
         setIsCloudLoaded(true);
@@ -125,12 +140,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     loadCloudData();
 
-    // Poll cloud database every 6 seconds on customer devices to show live admin updates automatically
+    // Poll cloud database every 4 seconds on customer devices to show live admin edits automatically
     const pollInterval = setInterval(() => {
       if (!isAdminLoggedIn) {
         loadCloudData();
       }
-    }, 6000);
+    }, 4000);
 
     return () => {
       isMounted = false;
@@ -138,12 +153,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, [isAdminLoggedIn]);
 
-  // 2. Push Cloud Sync ONLY when Admin is logged in & Cloud Initial Fetch is Complete
+  // 2. Push Cloud Sync ONLY when Admin is LOGGED IN (Prevents customer devices from overwriting cloud DB!)
   useEffect(() => {
-    if (isCloudLoaded) {
+    if (isCloudLoaded && isAdminLoggedIn) {
       syncStoreDataToCloud({ settings, categories, products, offers, orders });
     }
-  }, [settings, categories, products, offers, orders, isCloudLoaded]);
+  }, [settings, categories, products, offers, orders, isCloudLoaded, isAdminLoggedIn]);
 
   useEffect(() => {
     localStorage.setItem(`${LOCAL_STORAGE_KEY}_admin`, isAdminLoggedIn ? 'true' : 'false');
