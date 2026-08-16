@@ -28,6 +28,7 @@ export const OfferModal: React.FC<OfferModalProps> = ({
   const [discountText, setDiscountText] = useState('10% OFF');
   const [code, setCode] = useState('');
   const [bannerColor, setBannerColor] = useState(colorPresets[0].value);
+  const [imageUrl, setImageUrl] = useState('');
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export const OfferModal: React.FC<OfferModalProps> = ({
       setDiscountText(offerToEdit.discountText);
       setCode(offerToEdit.code || '');
       setBannerColor(offerToEdit.bannerColor || colorPresets[0].value);
+      setImageUrl(offerToEdit.imageUrl || '');
       setIsActive(offerToEdit.isActive);
     } else {
       setTitle('');
@@ -44,6 +46,7 @@ export const OfferModal: React.FC<OfferModalProps> = ({
       setDiscountText('10% OFF');
       setCode('');
       setBannerColor(colorPresets[0].value);
+      setImageUrl('https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=80');
       setIsActive(true);
     }
   }, [offerToEdit, isOpen]);
@@ -59,6 +62,7 @@ export const OfferModal: React.FC<OfferModalProps> = ({
         discountText,
         code,
         bannerColor,
+        imageUrl,
         isActive
       });
     } else {
@@ -68,6 +72,7 @@ export const OfferModal: React.FC<OfferModalProps> = ({
         discountText,
         code,
         bannerColor,
+        imageUrl,
         isActive
       });
     }
@@ -145,6 +150,19 @@ export const OfferModal: React.FC<OfferModalProps> = ({
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Banner Image URL (Optional)
+            </label>
+            <input
+              type="url"
+              placeholder="https://images.unsplash.com/..."
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 

@@ -31,6 +31,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   const [name, setName] = useState('');
   const [iconName, setIconName] = useState('Wheat');
   const [description, setDescription] = useState('');
+  const [image, setImage] = useState('');
   const [displayOrder, setDisplayOrder] = useState<number>(categories.length + 1);
 
   useEffect(() => {
@@ -38,11 +39,13 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
       setName(categoryToEdit.name);
       setIconName(categoryToEdit.iconName);
       setDescription(categoryToEdit.description || '');
+      setImage(categoryToEdit.image || '');
       setDisplayOrder(categoryToEdit.displayOrder || 1);
     } else {
       setName('');
       setIconName('Wheat');
       setDescription('');
+      setImage('https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&auto=format&fit=crop&q=80');
       setDisplayOrder(categories.length + 1);
     }
   }, [categoryToEdit, isOpen, categories]);
@@ -56,6 +59,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         name,
         iconName,
         description,
+        image,
         displayOrder: Number(displayOrder)
       });
     } else {
@@ -63,6 +67,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         name,
         iconName,
         description,
+        image,
         displayOrder: Number(displayOrder)
       });
     }
@@ -128,6 +133,19 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
               min={1}
               value={displayOrder}
               onChange={(e) => setDisplayOrder(Number(e.target.value))}
+              className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Category Image URL
+            </label>
+            <input
+              type="url"
+              placeholder="https://images.unsplash.com/..."
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
               className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>

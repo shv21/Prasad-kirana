@@ -32,8 +32,12 @@ export const AdminDashboard: React.FC = () => {
     adminTab,
     setAdminTab,
     deleteProduct,
+    deleteAllProducts,
     deleteCategory,
+    deleteAllCategories,
     deleteOffer,
+    deleteAllOffers,
+    deleteAllOrders,
     updateSettings,
     logoutAdmin,
     resetDatabase,
@@ -339,13 +343,28 @@ export const AdminDashboard: React.FC = () => {
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
 
-              <button
-                onClick={() => { setProductToEdit(null); setIsProductModalOpen(true); }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Product</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {products.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to delete ALL products from the store?')) {
+                        deleteAllProducts();
+                      }
+                    }}
+                    className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete All Products</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => { setProductToEdit(null); setIsProductModalOpen(true); }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Product</span>
+                </button>
+              </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
@@ -453,13 +472,28 @@ export const AdminDashboard: React.FC = () => {
                 <h3 className="font-bold text-slate-900 text-sm">Store Categories</h3>
                 <p className="text-xs text-slate-500">Organize your Kirana shop product sections</p>
               </div>
-              <button
-                onClick={() => { setCategoryToEdit(null); setIsCategoryModalOpen(true); }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Category</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {categories.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to delete ALL categories?')) {
+                        deleteAllCategories();
+                      }
+                    }}
+                    className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete All Categories</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => { setCategoryToEdit(null); setIsCategoryModalOpen(true); }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Category</span>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -505,23 +539,39 @@ export const AdminDashboard: React.FC = () => {
           <div className="space-y-4 animate-fade-in">
             
             {/* Status Filter Bar */}
-            <div className="bg-white p-3 rounded-2xl border border-slate-200 flex items-center gap-2 overflow-x-auto no-scrollbar">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
-                Filter Status:
-              </span>
-              {['all', 'new', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'].map((st) => (
+            <div className="bg-white p-3 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
+                  Filter Status:
+                </span>
+                {['all', 'new', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'].map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setOrderStatusFilter(st)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap capitalize ${
+                      orderStatusFilter === st
+                        ? 'bg-slate-900 text-white shadow-2xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {st.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
+
+              {orders.length > 0 && (
                 <button
-                  key={st}
-                  onClick={() => setOrderStatusFilter(st)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap capitalize ${
-                    orderStatusFilter === st
-                      ? 'bg-slate-900 text-white shadow-2xs'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to clear ALL customer order history?')) {
+                      deleteAllOrders();
+                    }
+                  }}
+                  className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shrink-0"
                 >
-                  {st.replace('_', ' ')}
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Clear All Orders</span>
                 </button>
-              ))}
+              )}
             </div>
 
             {/* Orders Table */}
@@ -596,13 +646,28 @@ export const AdminDashboard: React.FC = () => {
                 <h3 className="font-bold text-slate-900 text-sm">Promotional Banners & Deals</h3>
                 <p className="text-xs text-slate-500">Highlight discount sales on customer homepage</p>
               </div>
-              <button
-                onClick={() => { setOfferToEdit(null); setIsOfferModalOpen(true); }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Create Offer Banner</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {offers.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to delete ALL promotional offers?')) {
+                        deleteAllOffers();
+                      }
+                    }}
+                    className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete All Offers</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => { setOfferToEdit(null); setIsOfferModalOpen(true); }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create Offer Banner</span>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -751,14 +816,40 @@ export const AdminDashboard: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Shop Address
+                    Store Sub-headline / Tagline (Hero Banner)
                   </label>
                   <input
                     type="text"
-                    value={settingsForm.address}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, address: e.target.value })}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500"
+                    value={settingsForm.tagline}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, tagline: e.target.value })}
+                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 font-semibold"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Shop Address *
+                    </label>
+                    <input
+                      type="text"
+                      value={settingsForm.address}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, address: e.target.value })}
+                      className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Nearby Landmark *
+                    </label>
+                    <input
+                      type="text"
+                      value={settingsForm.landmark}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, landmark: e.target.value })}
+                      className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 font-semibold text-amber-800"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -769,6 +860,54 @@ export const AdminDashboard: React.FC = () => {
                     type="text"
                     value={settingsForm.announcementBar}
                     onChange={(e) => setSettingsForm({ ...settingsForm, announcementBar: e.target.value })}
+                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    About Store Description Text
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={settingsForm.aboutText}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, aboutText: e.target.value })}
+                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    🏦 CSP Banking Service Point Information Text
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={settingsForm.cspServicesInfo}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, cspServicesInfo: e.target.value })}
+                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    🌾 Atta Chakki (Flour Mill) Service Information Text
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={settingsForm.flourMillInfo}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, flourMillInfo: e.target.value })}
+                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Google Maps Link URL
+                  </label>
+                  <input
+                    type="url"
+                    value={settingsForm.googleMapsUrl}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, googleMapsUrl: e.target.value })}
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>

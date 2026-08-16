@@ -34,14 +34,18 @@ interface StoreContextType {
   addProduct: (product: Omit<Product, 'id'>) => Product;
   updateProduct: (id: string, product: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
+  deleteAllProducts: () => void;
   addCategory: (category: Omit<Category, 'id'>) => Category;
   updateCategory: (id: string, category: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
+  deleteAllCategories: () => void;
   addOffer: (offer: Omit<Offer, 'id'>) => Offer;
   updateOffer: (id: string, offer: Partial<Offer>) => void;
   deleteOffer: (id: string) => void;
+  deleteAllOffers: () => void;
   createOrder: (orderData: Omit<Order, 'id' | 'orderNumber' | 'createdAt' | 'status'>) => Order;
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  deleteAllOrders: () => void;
   
   // Auth
   loginAdmin: (passcode: string) => boolean;
@@ -164,6 +168,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast('Product deleted', 'warning');
   };
 
+  const deleteAllProducts = () => {
+    setProducts([]);
+    addToast('All products deleted from inventory', 'warning');
+  };
+
   const addCategory = (catData: Omit<Category, 'id'>) => {
     const newCat: Category = {
       ...catData,
@@ -186,6 +195,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast('Category deleted', 'warning');
   };
 
+  const deleteAllCategories = () => {
+    setCategories([]);
+    addToast('All categories deleted', 'warning');
+  };
+
   const addOffer = (offData: Omit<Offer, 'id'>) => {
     const newOffer: Offer = {
       ...offData,
@@ -206,6 +220,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const deleteOffer = (id: string) => {
     setOffers((prev) => prev.filter((o) => o.id !== id));
     addToast('Offer deleted', 'warning');
+  };
+
+  const deleteAllOffers = () => {
+    setOffers([]);
+    addToast('All promotional offers deleted', 'warning');
   };
 
   const createOrder = (orderData: Omit<Order, 'id' | 'orderNumber' | 'createdAt' | 'status'>) => {
@@ -244,6 +263,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       prev.map((o) => (o.id === orderId ? { ...o, status } : o))
     );
     addToast(`Order status changed to ${status.replace('_', ' ').toUpperCase()}`);
+  };
+
+  const deleteAllOrders = () => {
+    setOrders([]);
+    addToast('All order records cleared', 'warning');
   };
 
   const loginAdmin = (passcode: string) => {
@@ -300,14 +324,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addProduct,
         updateProduct,
         deleteProduct,
+        deleteAllProducts,
         addCategory,
         updateCategory,
         deleteCategory,
+        deleteAllCategories,
         addOffer,
         updateOffer,
         deleteOffer,
+        deleteAllOffers,
         createOrder,
         updateOrderStatus,
+        deleteAllOrders,
         loginAdmin,
         logoutAdmin,
         addToast,
