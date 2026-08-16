@@ -6,6 +6,7 @@ import { AnnouncementBar } from './components/customer/AnnouncementBar';
 import { Header } from './components/customer/Header';
 import { MobileNav } from './components/customer/MobileNav';
 import { Hero } from './components/customer/Hero';
+import { ThreeServicesBanner } from './components/customer/ThreeServicesBanner';
 import { QuickActions } from './components/customer/QuickActions';
 import { QuickRashanList } from './components/customer/QuickRashanList';
 import { FlourMillSection } from './components/customer/FlourMillSection';
@@ -39,6 +40,7 @@ const MainLayout: React.FC = () => {
       {/* Main Content Sections */}
       <main className="flex-1">
         <Hero />
+        <ThreeServicesBanner />
         <QuickActions />
         <QuickRashanList />
         <FlourMillSection />

@@ -99,6 +99,7 @@ export interface StoreSettings {
   googleMapsUrl: string;
   aboutText: string;
   flourMillInfo: string;
+  cspServicesInfo: string;
   announcementBar: string;
 }
 
