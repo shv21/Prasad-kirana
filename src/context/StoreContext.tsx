@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { Product, Category, Offer, Order, StoreSettings, OrderStatus, ToastMessage } from '../types';
 import { initialStoreSettings, initialCategories, initialProducts, initialOffers, initialOrders } from '../data/mockData';
+import { fetchCloudStoreData, syncStoreDataToCloud } from '../services/cloudSync';
 
 interface StoreContextType {
   settings: StoreSettings;
@@ -102,26 +103,27 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [offersOnly, setOffersOnly] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Sync to localStorage
+  // 1. Initial Live Cloud Sync Fetch on Mount
   useEffect(() => {
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_settings`, JSON.stringify(settings));
-  }, [settings]);
+    let isMounted = true;
+    async function loadCloudData() {
+      const cloudData = await fetchCloudStoreData();
+      if (cloudData && isMounted) {
+        if (cloudData.settings) setSettings(cloudData.settings);
+        if (cloudData.categories) setCategories(cloudData.categories);
+        if (cloudData.products) setProducts(cloudData.products);
+        if (cloudData.offers) setOffers(cloudData.offers);
+        if (cloudData.orders) setOrders(cloudData.orders);
+      }
+    }
+    loadCloudData();
+    return () => { isMounted = false; };
+  }, []);
 
+  // 2. Realtime Push Cloud Sync & Local Storage Persistence
   useEffect(() => {
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_categories`, JSON.stringify(categories));
-  }, [categories]);
-
-  useEffect(() => {
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_products`, JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_offers`, JSON.stringify(offers));
-  }, [offers]);
-
-  useEffect(() => {
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_orders`, JSON.stringify(orders));
-  }, [orders]);
+    syncStoreDataToCloud({ settings, categories, products, offers, orders });
+  }, [settings, categories, products, offers, orders]);
 
   useEffect(() => {
     localStorage.setItem(`${LOCAL_STORAGE_KEY}_admin`, isAdminLoggedIn ? 'true' : 'false');

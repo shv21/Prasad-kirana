@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import type { Product, Category, Offer, Order } from '../../types';
+import type { Product, Category, Offer, Order, OrderItem } from '../../types';
 import { ProductModal } from './ProductModal';
 import { CategoryModal } from './CategoryModal';
 import { OfferModal } from './OfferModal';
@@ -301,7 +301,7 @@ export const AdminDashboard: React.FC = () => {
                           {order.deliveryType === 'delivery' ? '🚚 Delivery' : '🏪 Pickup'}
                         </td>
                         <td className="p-3 font-semibold text-slate-800">
-                          {order.items.reduce((s, i) => s + i.quantity, 0)} items
+                          {order.items.reduce((s: number, i: OrderItem) => s + i.quantity, 0)} items
                         </td>
                         <td className="p-3 font-extrabold text-slate-900">
                           ₹{order.totalAmount}
@@ -613,7 +613,7 @@ export const AdminDashboard: React.FC = () => {
                         <td className="p-3">
                           <p className="font-extrabold text-slate-900 text-sm">₹{order.totalAmount}</p>
                           <p className="text-[11px] text-slate-500">
-                            {order.items.reduce((s, i) => s + i.quantity, 0)} items
+                            {order.items.reduce((s: number, i: OrderItem) => s + i.quantity, 0)} items
                           </p>
                         </td>
                         <td className="p-3">
