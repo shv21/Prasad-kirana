@@ -3,7 +3,7 @@ import type { Category, Product, Offer, StoreSettings, Order } from '../types';
 export const initialStoreSettings: StoreSettings = {
   shopName: "Prasad Kirana Stores, CSP & Flour Mill",
   proprietorName: "Abhimanyu Jadhav",
-  tagline: "1. CSP Banking • 2. Grocery Store • 3. Flour Mill (Atta Chakki)",
+  tagline: "1. CSP Banking • 2. Kirana Store • 3. Flour Mill (Atta Chakki)",
   phone: "7499047152",
   whatsappNumber: "7499047152",
   email: "prasadkiranacsp@gmail.com",
@@ -18,10 +18,10 @@ export const initialStoreSettings: StoreSettings = {
   minOrderAmount: 50,
   deliveryRadius: "Pachod Kh. town & surrounding areas",
   googleMapsUrl: "https://maps.app.goo.gl/4euTza44dgd4diRv9",
-  aboutText: "आपले विश्वासू ३-इन-१ केंद्र: १. ग्राहक सेवा केंद्र (CSP Banking), २. किराणा स्टोअर्स (Grocery Store), ३. अट्टा चक्की (Flour Mill). पाचोड खुर्द झेड.पी. शाळेजवळ!",
+  aboutText: "आपले विश्वासू ३-इन-१ केंद्र: १. ग्राहक सेवा केंद्र (CSP Banking Point), २. किराणा स्टोअर्स (Grocery Store), ३. अट्टा चक्की (Flour Mill). पाचोड खुर्द झेड.पी. शाळेजवळ!",
   flourMillInfo: "अट्टा चक्की (Flour Mill): लोकवण गहू ताजी कणिक, शाळू ज्वारी, बाजरी, चणा डाळीचे बेसन व मसाले उत्तम व स्वच्छ प्रकारे दळून मिळतील.",
   cspServicesInfo: "ग्राहक सेवा केंद्र (CSP Banking Point): आधार पेमेंट (AEPS), रोख पैसे भरणे/काढणे (Cash Deposit/Withdrawal), मायक्रो एटीएम (Micro ATM), मनी ट्रान्सफर (Money Transfer) आणि मिनी स्टेटमेंट सुविधा उपलब्ध.",
-  announcementBar: "⚡ ३ मुख्य सेवा: 🏦 ग्राहक सेवा केंद्र (CSP) | 🛒 किराणा दुकान | 🌾 अट्टा चक्की! 📍 झेड.पी. शाळा पाचोड खुर्द जवळ. Call/WhatsApp: 7499047152."
+  announcementBar: "⚡ ३ स्वतंत्र सेवा: 🏦 ग्राहक सेवा केंद्र (CSP) | 🛒 किराणा दुकान | 🌾 अट्टा चक्की! 📍 झेड.पी. शाळा पाचोड खुर्द जवळ. Call/WhatsApp: 7499047152."
 };
 
 export const initialCategories: Category[] = [
@@ -103,8 +103,8 @@ export const initialProducts: Product[] = [
   // Atta & Flour Mill
   {
     id: "p-101",
-    name: "CSP Fresh Chakki Gehu Atta (चक्की ताजी कणिक)",
-    brand: "CSP Flour Mill",
+    name: "Chakki Fresh Gehu Atta (चक्की ताजी कणिक)",
+    brand: "Atta Chakki",
     weight: "10 kg Bag",
     price: 360,
     mrp: 400,
@@ -116,7 +116,7 @@ export const initialProducts: Product[] = [
     isOffer: true,
     discountPercent: 10,
     isFlourMillSpecial: true,
-    description: "100% शुद्ध लोकवण गव्हाचे सीएसपी अट्टा चक्की मधील ताजे दळलेले पीठ. मऊ व लुसलुशीत पोळ्यांठी उत्तम!",
+    description: "100% शुद्ध लोकवण गव्हाचे अट्टा चक्की मधील ताजे दळलेले पीठ. मऊ व लुसलुशीत पोळ्यांठी उत्तम!",
     image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80"
   },
   {
@@ -138,8 +138,8 @@ export const initialProducts: Product[] = [
   },
   {
     id: "p-103",
-    name: "CSP Pure Jowar Peeth (शाळू ज्वारी पीठ)",
-    brand: "CSP Flour Mill",
+    name: "Pure Jowar Peeth (शाळू ज्वारी पीठ)",
+    brand: "Atta Chakki",
     weight: "5 kg Bag",
     price: 210,
     mrp: 240,
@@ -151,7 +151,7 @@ export const initialProducts: Product[] = [
     isOffer: true,
     discountPercent: 12,
     isFlourMillSpecial: true,
-    description: "शाळू ज्वारीचे ताजे दळलेले पीठ. खुसखुशीत भाकरीसाठी उत्तम.",
+    description: "शाळू ज्वारीचे चक्की मधील ताजे दळलेले पीठ. खुसखुशीत भाकरीसाठी उत्तम.",
     image: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=500&auto=format&fit=crop&q=80"
   },
   {
@@ -375,10 +375,10 @@ export const initialProducts: Product[] = [
 export const initialOffers: Offer[] = [
   {
     id: "off-1",
-    title: "CSP Flour Mill Special Atta Deal",
-    subtitle: "10kg ताजी गव्हाची कणिक (Chakki Atta) वर ₹40 विशेष सूट!",
+    title: "Atta Chakki Special Fresh Deal",
+    subtitle: "10kg ताजी गव्हाची चक्की कणिक (Chakki Atta) वर ₹40 विशेष सूट!",
     discountText: "10% OFF",
-    code: "CSPFRESH",
+    code: "CHAKKIFRESH",
     bannerColor: "from-emerald-800 to-teal-900",
     productId: "p-101",
     isActive: true,
@@ -386,9 +386,9 @@ export const initialOffers: Offer[] = [
   },
   {
     id: "off-2",
-    title: "CSP Banking & Grocery Doorstep Facility",
-    subtitle: "पाचोड खुर्द झेड.पी. शाळेजवळ (Near ZP School Pachod Kh.) बँक व किराणा सेवा!",
-    discountText: "3-IN-1 SERVICES",
+    title: "CSP Banking & Grocery Store Facility",
+    subtitle: "पाचोड खुर्द झेड.पी. शाळेजवळ (Near ZP School Pachod Kh.) ग्राहक सेवा केंद्र व किराणा दुकान!",
+    discountText: "SEPARATE SERVICES",
     bannerColor: "from-amber-600 to-orange-700",
     isActive: true,
     imageUrl: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop&q=80"
@@ -409,8 +409,8 @@ export const initialOrders: Order[] = [
     items: [
       {
         productId: "p-101",
-        name: "CSP Fresh Chakki Gehu Atta",
-        brand: "CSP Flour Mill",
+        name: "Chakki Fresh Gehu Atta",
+        brand: "Atta Chakki",
         weight: "10 kg Bag",
         price: 360,
         quantity: 1,

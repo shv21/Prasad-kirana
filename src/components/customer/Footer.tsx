@@ -33,12 +33,12 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminLogin }) => {
                   {settings.shopName}
                 </h3>
                 <p className="text-amber-400 text-xs font-semibold">
-                  CSP Flour Mill Pachod
+                  CSP Banking • Kirana Store • Atta Chakki
                 </p>
               </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Your trusted neighborhood Kirana & Flour Mill store. Fresh daily groceries, packaged foods, and grain milling served with care in Pachod.
+              1. CSP (Customer Service Point Banking), 2. Kirana Store (Daily Rashan), 3. Atta Chakki (Flour Mill). Near ZP School, Pachod Kh.
             </p>
             <div className="flex items-center gap-2 pt-1 text-xs text-emerald-400 font-semibold">
               <ShieldCheck className="w-4 h-4" />

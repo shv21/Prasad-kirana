@@ -31,20 +31,20 @@ export const Hero: React.FC = () => {
             {/* Store Badge */}
             <div className="inline-flex items-center gap-2 bg-amber-400 text-slate-950 font-black px-3.5 py-1 rounded-full text-xs shadow-md">
               <Store className="w-4 h-4 text-slate-950" />
-              <span>पाचोड मधील तुमचे विश्वासू किराणा दुकान व चक्की</span>
+              <span>१. CSP बँगकिंग | २. किराणा दुकान | ३. अट्टा चक्की</span>
             </div>
 
             {/* Headline */}
             <h1 className="text-2xl sm:text-4xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
               {settings.shopName}{' '}
               <span className="text-amber-400 font-extrabold block text-lg sm:text-2xl mt-1">
-                एव्हरीडे किराणा माल व सीएसपी फ्लोअर मिल
+                ३ स्वतंत्र सेवा — झेड.पी. शाळा पाचोड खुर्द जवळ
               </span>
             </h1>
 
             {/* Subtext */}
             <p className="text-xs sm:text-sm text-emerald-100/90 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              ताजी कणिक, लोकवण गहू, डाळी, तांदूळ, तेल, मसाले, साबण व रोजच्या घरगुती किराणा सामानाची ऑनलाइन ऑर्डर. पाचोड परिसरात जलद होम डिलिव्हरी!
+              १. ग्राहक सेवा केंद्र (CSP Banking AEPS/ATM), २. संपूर्ण घरगुती किराणा सामान (Grocery Store), ३. धान्य दळण अट्टा चक्की (Atta Chakki).
             </p>
 
             {/* Buttons */}

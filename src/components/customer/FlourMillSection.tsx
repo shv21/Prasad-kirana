@@ -15,7 +15,7 @@ export const FlourMillSection: React.FC = () => {
           
           {/* Top Decorative Banner */}
           <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-orange-600 text-slate-900 font-extrabold text-xs px-4 py-1.5 rounded-bl-2xl shadow-sm uppercase tracking-wider">
-            CSP Flour Mill Specialty
+            Atta Chakki (अट्टा चक्की)
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -24,12 +24,12 @@ export const FlourMillSection: React.FC = () => {
             <div className="lg:col-span-7 space-y-4">
               <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-xs font-bold border border-amber-300">
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                <span>Pure Hygienic Grain Grinding Services</span>
+                <span>Pure Hygienic Grain Milling Services</span>
               </div>
 
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                Fresh Chakki Atta & Flour Grinding at{' '}
-                <span className="text-amber-700">CSP Flour Mill</span>
+                Fresh Chakki Atta & Grain Grinding at{' '}
+                <span className="text-amber-700">Atta Chakki (अट्टा चक्की)</span>
               </h2>
 
               <p className="text-sm text-slate-600 leading-relaxed">
@@ -99,7 +99,7 @@ export const FlourMillSection: React.FC = () => {
                     Pachod Local Mill
                   </span>
                   <h4 className="text-white text-lg font-bold">
-                    CSP Flour Mill — Proprietor: Abhimanyu Jadhav
+                    Atta Chakki (अट्टा चक्की) — Proprietor: Abhimanyu Jadhav
                   </h4>
                   <p className="text-slate-300 text-xs mt-1">
                     Order pre-ground 5kg / 10kg bags or request custom milling.

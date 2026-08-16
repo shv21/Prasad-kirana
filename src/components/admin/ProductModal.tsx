@@ -152,7 +152,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               <input
                 type="text"
                 required
-                placeholder="e.g. Tata / Everest / CSP Mill"
+                placeholder="e.g. Tata / Everest / Atta Chakki"
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
                 className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -267,7 +267,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 onChange={(e) => setIsFlourMillSpecial(e.target.checked)}
                 className="w-4 h-4 accent-amber-600 rounded"
               />
-              CSP Flour Mill Item 🌾
+              Atta Chakki Item 🌾
             </label>
           </div>
 

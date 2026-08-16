@@ -35,8 +35,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
                 <h1 className="text-base md:text-lg font-bold text-slate-900 leading-tight">
                   {settings.shopName}
                 </h1>
-                <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded-sm border border-amber-200 hidden sm:inline-block">
-                  CSP Mill
+                <span className="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-1.5 py-0.5 rounded-sm border border-amber-300 hidden sm:inline-block">
+                  3-in-1 Center
                 </span>
               </div>
               <p className="text-xs text-slate-500 hidden sm:block">
@@ -46,24 +46,21 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-600">
+          <nav className="hidden lg:flex items-center gap-5 text-xs sm:text-sm font-semibold text-slate-700">
             <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-emerald-600 transition-colors">
               Home
             </button>
-            <button onClick={() => scrollToSection('categories-section')} className="hover:text-emerald-600 transition-colors">
-              Categories
+            <button onClick={() => scrollToSection('three-services-section')} className="hover:text-blue-600 transition-colors text-blue-700 font-bold">
+              🏦 CSP Banking
             </button>
-            <button onClick={() => scrollToSection('products-section')} className="hover:text-emerald-600 transition-colors">
-              Products
+            <button onClick={() => scrollToSection('products-section')} className="hover:text-emerald-600 transition-colors text-emerald-700 font-bold">
+              🛒 Kirana Store
             </button>
-            <button onClick={() => scrollToSection('flour-mill-section')} className="hover:text-emerald-600 transition-colors text-amber-700 font-semibold flex items-center gap-1">
-              🌾 Flour Mill
-            </button>
-            <button onClick={() => scrollToSection('offers-section')} className="hover:text-emerald-600 transition-colors">
-              Offers
+            <button onClick={() => scrollToSection('flour-mill-section')} className="hover:text-amber-700 transition-colors text-amber-800 font-bold">
+              🌾 Atta Chakki
             </button>
             <button onClick={() => scrollToSection('store-info-section')} className="hover:text-emerald-600 transition-colors">
-              Store Info
+              📍 Landmark & Map
             </button>
           </nav>
 
@@ -211,10 +208,22 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
             🛍️ All Products
           </button>
           <button
-            onClick={() => scrollToSection('flour-mill-section')}
-            className="w-full text-left py-2.5 px-3 rounded-lg text-sm font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100"
+            onClick={() => scrollToSection('three-services-section')}
+            className="w-full text-left py-2.5 px-3 rounded-lg text-sm font-semibold text-blue-900 bg-blue-50 hover:bg-blue-100"
           >
-            🌾 CSP Flour Mill Services
+            🏦 CSP Banking (ग्राहक सेवा केंद्र)
+          </button>
+          <button
+            onClick={() => scrollToSection('products-section')}
+            className="w-full text-left py-2.5 px-3 rounded-lg text-sm font-semibold text-emerald-900 bg-emerald-50 hover:bg-emerald-100"
+          >
+            🛒 Kirana Store (किराणा स्टोअर्स)
+          </button>
+          <button
+            onClick={() => scrollToSection('flour-mill-section')}
+            className="w-full text-left py-2.5 px-3 rounded-lg text-sm font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100"
+          >
+            🌾 Atta Chakki (अट्टा चक्की)
           </button>
           <button
             onClick={() => scrollToSection('offers-section')}
