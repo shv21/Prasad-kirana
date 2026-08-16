@@ -9,10 +9,9 @@ export interface FullStorePayload {
   lastUpdated: string;
 }
 
-// Public cloud storage endpoint for Prasad Kirana
-const CLOUD_BIN_ID = '65cf8c64dc74654018a7c2d1'; 
-const JSONBIN_READ_URL = `https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`;
-const JSONBIN_UPDATE_URL = `https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`;
+// Live Cloud REST database ID for Prasad Kirana
+const CLOUD_OBJECT_ID = 'ff8081819ff5b11001a00a8dcfaf2c19';
+const CLOUD_ENDPOINT_URL = `https://api.restful-api.dev/objects/${CLOUD_OBJECT_ID}`;
 
 let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -21,17 +20,17 @@ let saveTimeout: ReturnType<typeof setTimeout> | null = null;
  */
 export async function fetchCloudStoreData(): Promise<FullStorePayload | null> {
   try {
-    const res = await fetch(JSONBIN_READ_URL, {
+    const res = await fetch(CLOUD_ENDPOINT_URL, {
       method: 'GET',
       headers: {
-        'X-Master-Key': '$2a$10$uWq.dG5hHj.Z.eL3LgM/vO7V1jQW8V.aJgH5jH5jH5jH5jH5jH5j'
+        'Content-Type': 'application/json'
       }
     });
-    
+
     if (!res.ok) return null;
     const json = await res.json();
-    if (json && json.record && json.record.products) {
-      return json.record as FullStorePayload;
+    if (json && json.data && json.data.products && Array.isArray(json.data.products)) {
+      return json.data as FullStorePayload;
     }
     return null;
   } catch (err) {
@@ -60,14 +59,16 @@ export function syncStoreDataToCloud(payload: Omit<FullStorePayload, 'lastUpdate
       localStorage.setItem('prasad_kirana_db_v1_offers', JSON.stringify(payload.offers));
       localStorage.setItem('prasad_kirana_db_v1_orders', JSON.stringify(payload.orders));
 
-      // Post to Cloud Bin API
-      await fetch(JSONBIN_UPDATE_URL, {
+      // PUT to Cloud REST Database
+      await fetch(CLOUD_ENDPOINT_URL, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': '$2a$10$uWq.dG5hHj.Z.eL3LgM/vO7V1jQW8V.aJgH5jH5jH5jH5jH5jH5j'
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(fullData)
+        body: JSON.stringify({
+          name: 'prasad_kirana_live_payload',
+          data: fullData
+        })
       });
     } catch (err) {
       console.warn('Cloud sync push notice (saved locally):', err);
