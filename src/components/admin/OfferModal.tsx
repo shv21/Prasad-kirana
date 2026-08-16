@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../../context/StoreContext';
 import type { Offer } from '../../types';
+import { ImageUploadInput } from '../ui/ImageUploadInput';
 import { X } from 'lucide-react';
 
 interface OfferModalProps {
@@ -153,18 +154,12 @@ export const OfferModal: React.FC<OfferModalProps> = ({
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Banner Image URL (Optional)
-            </label>
-            <input
-              type="url"
-              placeholder="https://images.unsplash.com/..."
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
+          <ImageUploadInput
+            label="Banner Image (Optional)"
+            value={imageUrl}
+            onChange={setImageUrl}
+            helpText="Upload a deal banner image from device or paste image URL."
+          />
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../../context/StoreContext';
 import type { Product, StockStatus } from '../../types';
-import { X, Image as ImageIcon } from 'lucide-react';
+import { ImageUploadInput } from '../ui/ImageUploadInput';
+import { X } from 'lucide-react';
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -271,41 +272,15 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             </label>
           </div>
 
-          {/* Image Selection */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Product Image URL
-            </label>
-            <input
-              type="text"
-              required
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-
-            {/* Image Presets Selector */}
-            <div className="mt-2">
-              <p className="text-[11px] text-slate-500 mb-1.5 flex items-center gap-1">
-                <ImageIcon className="w-3.5 h-3.5" />
-                Or pick a preset demo image:
-              </p>
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {sampleImages.map((imgUrl, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setImage(imgUrl)}
-                    className={`w-10 h-10 rounded-lg overflow-hidden border-2 shrink-0 ${
-                      image === imgUrl ? 'border-emerald-600 ring-2 ring-emerald-300' : 'border-slate-200'
-                    }`}
-                  >
-                    <img src={imgUrl} alt="preset" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* Image Selection with Device File Picker & Presets */}
+          <ImageUploadInput
+            label="Product Card Image"
+            value={image}
+            onChange={setImage}
+            required
+            presetImages={sampleImages}
+            helpText="Upload a photo directly from your device gallery or paste an image link."
+          />
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">

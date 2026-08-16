@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../../context/StoreContext';
 import type { Category } from '../../types';
+import { ImageUploadInput } from '../ui/ImageUploadInput';
 import { X } from 'lucide-react';
 
 interface CategoryModalProps {
@@ -137,18 +138,12 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Category Image URL
-            </label>
-            <input
-              type="url"
-              placeholder="https://images.unsplash.com/..."
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
+          <ImageUploadInput
+            label="Category Image"
+            value={image}
+            onChange={setImage}
+            helpText="Upload a category picture from your device gallery or paste an image URL."
+          />
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
