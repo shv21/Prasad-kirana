@@ -106,6 +106,7 @@ export interface StoreSettings {
   adminPin?: string;
   adminUsername?: string;
   adminPassword?: string;
+  imgbbApiKey?: string;
 }
 
 export interface ToastMessage {
