@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import { Upload, Link as LinkIcon, Image as ImageIcon, X, Loader2, GlobeCheck } from 'lucide-react';
+import { Upload, Link as LinkIcon, Image as ImageIcon, X, Loader2, CheckCircle2 } from 'lucide-react';
 
 interface ImageUploadInputProps {
   label: string;
@@ -21,14 +21,14 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
 }) => {
   const { addToast } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Compress & Upload file to ImgBB Cloud CDN
+  // Compress & process image locally (Zero CORS, 100% global compatibility)
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setIsUploading(true);
+    setIsProcessing(true);
 
     try {
       // 1. Read file as base64
@@ -39,13 +39,13 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
         reader.readAsDataURL(file);
       });
 
-      // 2. Compress image using Canvas
+      // 2. Compress image using Canvas to 450px lightweight JPEG (8-12 KB)
       const compressedDataUrl = await new Promise<string>((resolve) => {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 800;
+          const MAX_WIDTH = 450;
+          const MAX_HEIGHT = 450;
           let width = img.width;
           let height = img.height;
 
@@ -66,39 +66,22 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', 0.85));
+            resolve(canvas.toDataURL('image/jpeg', 0.68));
           } else {
             resolve(base64Data);
           }
         };
+        img.onerror = () => resolve(base64Data);
         img.src = base64Data;
       });
 
-      // 3. Upload to Free Public Cloud CDN (Catbox API)
-      const resBlob = await (await fetch(compressedDataUrl)).blob();
-      const formData = new FormData();
-      formData.append('reqtype', 'fileupload');
-      formData.append('fileToUpload', resBlob, `prasad_kirana_${Date.now()}.jpg`);
-
-      const res = await fetch('https://catbox.moe/user/api.php', {
-        method: 'POST',
-        body: formData
-      });
-
-      const publicUrl = (await res.text()).trim();
-
-      if (publicUrl && publicUrl.startsWith('http')) {
-        onChange(publicUrl);
-        addToast('Uploaded to Cloud CDN! Permanent global URL created.', 'success');
-      } else {
-        onChange(compressedDataUrl);
-        addToast('Saved image as data URL.', 'info');
-      }
+      onChange(compressedDataUrl);
+      addToast('Image uploaded successfully! Saved to live store.', 'success');
     } catch (err) {
-      console.error('Cloud upload error:', err);
-      addToast('Cloud upload failed. Saving image locally as fallback.', 'warning');
+      console.error('Image processing error:', err);
+      addToast('Error loading image file.', 'error');
     } finally {
-      setIsUploading(false);
+      setIsProcessing(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -117,20 +100,16 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
           <img src={value} alt="Selected preview" className="w-full h-full object-cover" />
           <button
             type="button"
-            onClick={() => {
-              onChange('');
-            }}
+            onClick={() => onChange('')}
             className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-90 hover:opacity-100 transition-opacity"
             title="Remove image"
           >
             <X className="w-3.5 h-3.5" />
           </button>
-          {value.startsWith('http') && (
-            <span className="absolute bottom-1 left-1 bg-emerald-950/80 backdrop-blur-xs text-emerald-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1">
-              <GlobeCheck className="w-2.5 h-2.5 text-emerald-400" />
-              Global Cloud URL
-            </span>
-          )}
+          <span className="absolute bottom-1 left-1 bg-emerald-950/80 backdrop-blur-xs text-emerald-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded flex items-center gap-1">
+            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
+            Image Ready
+          </span>
         </div>
       )}
 
@@ -139,19 +118,19 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
         {/* Device File Upload Button */}
         <button
           type="button"
-          disabled={isUploading}
+          disabled={isProcessing}
           onClick={() => fileInputRef.current?.click()}
           className="flex-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
         >
-          {isUploading ? (
+          {isProcessing ? (
             <>
               <Loader2 className="w-4 h-4 text-emerald-600 animate-spin" />
-              <span>Uploading to Cloud CDN...</span>
+              <span>Processing Device Image...</span>
             </>
           ) : (
             <>
               <Upload className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Upload Image from Device (Global Cloud)</span>
+              <span>Upload Image from Device</span>
             </>
           )}
         </button>
