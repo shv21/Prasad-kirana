@@ -852,6 +852,36 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200">
+                  <div>
+                    <label className="block text-xs font-bold text-emerald-950 mb-1">
+                      📸 Main Hero Storefront Showcase Image URL *
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://images.unsplash.com/..."
+                      value={settingsForm.heroImageUrl || ''}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, heroImageUrl: e.target.value })}
+                      className="w-full px-3.5 py-2 text-xs bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">Changes main homepage showcase photo.</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-amber-950 mb-1">
+                      🌾 Atta Chakki (Flour Mill) Showcase Image URL
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://images.unsplash.com/..."
+                      value={settingsForm.flourMillImageUrl || ''}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, flourMillImageUrl: e.target.value })}
+                      className="w-full px-3.5 py-2 text-xs bg-white border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">Changes flour mill section photo.</p>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Top Announcement Banner Text

@@ -103,7 +103,7 @@ export const Hero: React.FC = () => {
           <div className="lg:col-span-5 relative">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-emerald-700 bg-slate-900 group">
               <img
-                src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80"
+                src={settings.heroImageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80'}
                 alt="Prasad Kirana Grocery Store Pachod"
                 className="w-full h-56 sm:h-72 object-cover group-hover:scale-105 transition-transform duration-500"
               />

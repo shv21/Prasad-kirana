@@ -90,8 +90,8 @@ export const FlourMillSection: React.FC = () => {
             <div className="lg:col-span-5 relative">
               <div className="relative rounded-2xl overflow-hidden shadow-lg border-2 border-amber-100 bg-amber-950">
                 <img
-                  src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80"
-                  alt="CSP Flour Mill Fresh Atta"
+                  src={settings.flourMillImageUrl || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80'}
+                  alt="Atta Chakki Fresh Atta"
                   className="w-full h-64 object-cover opacity-90"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-5 flex flex-col justify-end">

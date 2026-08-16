@@ -101,6 +101,8 @@ export interface StoreSettings {
   flourMillInfo: string;
   cspServicesInfo: string;
   announcementBar: string;
+  heroImageUrl?: string;
+  flourMillImageUrl?: string;
 }
 
 export interface ToastMessage {
