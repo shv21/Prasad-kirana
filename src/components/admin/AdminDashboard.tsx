@@ -930,22 +930,39 @@ export const AdminDashboard: React.FC = () => {
                   />
                 </div>
 
-                <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-3 border border-slate-800">
+                <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-4 border border-slate-800">
                   <h4 className="font-extrabold text-xs uppercase tracking-wider text-amber-400">
-                    🔑 Security & Passcode Settings
+                    🔑 Security & Admin Account Credentials
                   </h4>
-                  <div className="max-w-xs">
-                    <label className="block text-xs font-bold text-slate-300 mb-1">
-                      Admin Login Passcode / PIN *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={settingsForm.adminPin || '7499047152'}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, adminPin: e.target.value })}
-                      className="w-full px-3.5 py-2 text-sm bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-amber-400 font-bold"
-                    />
-                    <p className="text-[10px] text-slate-400 mt-1">Default PIN is 7499047152. Change to your private PIN.</p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">
+                        Admin Login ID / Username *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={settingsForm.adminUsername || 'abhimanyu'}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, adminUsername: e.target.value })}
+                        className="w-full px-3.5 py-2 text-sm bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-white font-bold"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">Default ID is <strong>abhimanyu</strong>.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">
+                        Admin Login Password *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={settingsForm.adminPassword || 'abhimanyu.jadhav'}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, adminPassword: e.target.value })}
+                        className="w-full px-3.5 py-2 text-sm bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-amber-400 font-bold"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">Default Password is <strong>abhimanyu.jadhav</strong>.</p>
+                    </div>
                   </div>
                 </div>
 

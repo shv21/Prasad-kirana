@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import { ShieldCheck, Lock, X, KeyRound } from 'lucide-react';
+import { ShieldCheck, User, Lock, X, KeyRound } from 'lucide-react';
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -8,8 +8,9 @@ interface AdminLoginModalProps {
 }
 
 export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClose }) => {
-  const { loginAdmin } = useStore();
-  const [passcode, setPasscode] = useState('');
+  const { loginAdmin, settings } = useStore();
+  const [username, setUsername] = useState(settings.adminUsername || 'abhimanyu');
+  const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   if (!isOpen) return null;
@@ -17,12 +18,12 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-    const success = loginAdmin(passcode);
+    const success = loginAdmin(username, password);
     if (success) {
-      setPasscode('');
+      setPassword('');
       onClose();
     } else {
-      setErrorMsg('Incorrect Passcode! Hint: Default passcode is "admin123" or phone "7499047152"');
+      setErrorMsg(`Incorrect Username or Password! (Default ID: "${settings.adminUsername || 'abhimanyu'}", Password: "${settings.adminPassword || 'abhimanyu.jadhav'}")`);
     }
   };
 
@@ -52,21 +53,38 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <p className="text-xs text-slate-600 leading-relaxed">
-            Enter your admin PIN to access real-time product inventory, category updates, customer order status, offers & store settings.
+            Enter your admin username (ID) & password to access inventory, orders, offers, and store settings.
           </p>
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
-              Admin Passcode / PIN
+              Admin Username / ID *
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                required
+                autoFocus
+                placeholder="e.g. abhimanyu"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold"
+              />
+              <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Admin Password *
             </label>
             <div className="relative">
               <input
                 type="password"
                 required
-                autoFocus
-                placeholder="Enter passcode (e.g. admin123)"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
+                placeholder="Enter password (abhimanyu.jadhav)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -76,9 +94,14 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
             )}
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-amber-600 shrink-0" />
-            <span>Default Demo Passcode: <strong className="font-mono bg-amber-200/80 px-1.5 py-0.5 rounded">admin123</strong></span>
+          <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-950 flex flex-col gap-1">
+            <div className="flex items-center gap-1.5 font-bold">
+              <KeyRound className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>Admin Credentials:</span>
+            </div>
+            <p className="text-[11px] text-slate-700 ml-5.5">
+              ID: <strong className="font-mono bg-amber-200/80 px-1 py-0.5 rounded">{settings.adminUsername || 'abhimanyu'}</strong> | Password: <strong className="font-mono bg-amber-200/80 px-1 py-0.5 rounded">{settings.adminPassword || 'abhimanyu.jadhav'}</strong>
+            </p>
           </div>
 
           <button

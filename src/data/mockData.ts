@@ -24,7 +24,9 @@ export const initialStoreSettings: StoreSettings = {
   announcementBar: "⚡ ३ स्वतंत्र सेवा: 🏦 ग्राहक सेवा केंद्र (CSP) | 🛒 किराणा दुकान | 🌾 अट्टा चक्की! 📍 झेड.पी. शाळा पाचोड खुर्द जवळ. Call/WhatsApp: 7499047152.",
   heroImageUrl: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80",
   flourMillImageUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80",
-  adminPin: "7499047152"
+  adminPin: "7499047152",
+  adminUsername: "abhimanyu",
+  adminPassword: "abhimanyu.jadhav"
 };
 
 export const initialCategories: Category[] = [

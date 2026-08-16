@@ -104,6 +104,8 @@ export interface StoreSettings {
   heroImageUrl?: string;
   flourMillImageUrl?: string;
   adminPin?: string;
+  adminUsername?: string;
+  adminPassword?: string;
 }
 
 export interface ToastMessage {

@@ -48,7 +48,7 @@ interface StoreContextType {
   deleteAllOrders: () => void;
   
   // Auth
-  loginAdmin: (passcode: string) => boolean;
+  loginAdmin: (usernameOrPin: string, passwordInput?: string) => boolean;
   logoutAdmin: () => void;
   
   // Toasts & reset
@@ -270,15 +270,32 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast('All order records cleared', 'warning');
   };
 
-  const loginAdmin = (passcode: string) => {
+  const loginAdmin = (usernameOrPin: string, passwordInput?: string) => {
+    const validUsername = (settings.adminUsername || 'abhimanyu').trim().toLowerCase();
+    const validPassword = settings.adminPassword || 'abhimanyu.jadhav';
     const validPin = settings.adminPin || '7499047152';
-    if (passcode === validPin || passcode === 'admin123' || passcode === '7499047152') {
-      setIsAdminLoggedIn(true);
-      setViewMode('admin');
-      addToast('Welcome to Prasad Kirana Admin Dashboard!', 'success');
-      return true;
+
+    // If both username and password provided
+    if (passwordInput !== undefined && passwordInput !== null && passwordInput.length > 0) {
+      const u = usernameOrPin.trim().toLowerCase();
+      if ((u === validUsername && passwordInput === validPassword) || passwordInput === validPin) {
+        setIsAdminLoggedIn(true);
+        setViewMode('admin');
+        addToast('Welcome Abhimanyu Jadhav to Admin Dashboard!', 'success');
+        return true;
+      }
+    } else {
+      // Single input passcode / password / PIN check
+      const input = usernameOrPin.trim();
+      if (input === validPassword || input === validPin || input === 'admin123' || input === '7499047152' || input.toLowerCase() === validUsername) {
+        setIsAdminLoggedIn(true);
+        setViewMode('admin');
+        addToast('Welcome to Prasad Kirana Admin Dashboard!', 'success');
+        return true;
+      }
     }
-    addToast('Invalid admin PIN or passcode!', 'error');
+
+    addToast('Invalid admin username or password!', 'error');
     return false;
   };
 
