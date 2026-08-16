@@ -947,7 +947,6 @@ export const AdminDashboard: React.FC = () => {
                         onChange={(e) => setSettingsForm({ ...settingsForm, adminUsername: e.target.value })}
                         className="w-full px-3.5 py-2 text-sm bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-white font-bold"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">Default ID is <strong>abhimanyu</strong>.</p>
                     </div>
 
                     <div>
@@ -955,13 +954,12 @@ export const AdminDashboard: React.FC = () => {
                         Admin Login Password *
                       </label>
                       <input
-                        type="text"
+                        type="password"
                         required
                         value={settingsForm.adminPassword || 'abhimanyu.jadhav'}
                         onChange={(e) => setSettingsForm({ ...settingsForm, adminPassword: e.target.value })}
                         className="w-full px-3.5 py-2 text-sm bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-amber-400 font-bold"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">Default Password is <strong>abhimanyu.jadhav</strong>.</p>
                     </div>
                   </div>
                 </div>
