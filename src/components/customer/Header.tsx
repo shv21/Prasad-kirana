@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { useCart } from '../../context/CartContext';
-import { Search, ShoppingBag, Store, ShieldCheck, Menu, X, Phone } from 'lucide-react';
+import { ShoppingBag, Store, ShieldCheck, Menu, X, Phone } from 'lucide-react';
 
 interface HeaderProps {
   onOpenAdminLogin: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
-  const { settings, searchQuery, setSearchQuery, isAdminLoggedIn, viewMode, setViewMode } = useStore();
+  const { settings, isAdminLoggedIn, viewMode, setViewMode } = useStore();
   const { itemCount, subtotal, setIsCartOpen } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -63,31 +63,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
               📍 Landmark & Map
             </button>
           </nav>
-
-          {/* Search Input Bar (Desktop & Tablet) */}
-          <div className="hidden md:flex flex-1 max-w-xs lg:max-w-sm relative">
-            <input
-              type="text"
-              placeholder="Search atta, rice, oil, spices..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                if (e.target.value) {
-                  scrollToSection('products-section');
-                }
-              }}
-              className="w-full pl-9 pr-4 py-2 text-sm bg-slate-100 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
-            />
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
 
           {/* Header Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -155,33 +130,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAdminLogin }) => {
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
-          </div>
-        </div>
-
-        {/* Mobile Search Bar (under header on small screens) */}
-        <div className="md:hidden pb-3">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search products in shop..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                if (e.target.value) {
-                  scrollToSection('products-section');
-                }
-              }}
-              className="w-full pl-9 pr-4 py-2 text-sm bg-slate-100 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
-            />
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
           </div>
         </div>
       </div>

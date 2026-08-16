@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStore } from '../../context/StoreContext';
 import { useCart } from '../../context/CartContext';
-import { Home, LayoutGrid, Search, ShoppingBag, MessageSquare } from 'lucide-react';
+import { Home, LayoutGrid, FileText, ShoppingBag, MessageSquare } from 'lucide-react';
 
 export const MobileNav: React.FC = () => {
   const { setSelectedCategory } = useStore();
@@ -36,17 +36,13 @@ export const MobileNav: React.FC = () => {
         <span className="text-[10px] font-medium mt-0.5">Categories</span>
       </button>
 
-      {/* Search */}
+      {/* Rashan List */}
       <button
-        onClick={() => {
-          scrollTo('products-section');
-          const input = document.querySelector('input[type="text"]') as HTMLInputElement;
-          if (input) input.focus();
-        }}
-        className="flex flex-col items-center justify-center p-1 text-slate-600 hover:text-emerald-600 transition-colors w-1/5"
+        onClick={() => scrollTo('quick-rashan-section')}
+        className="flex flex-col items-center justify-center p-1 text-amber-700 hover:text-amber-800 transition-colors w-1/5 font-bold"
       >
-        <Search className="w-5 h-5" />
-        <span className="text-[10px] font-medium mt-0.5">Search</span>
+        <FileText className="w-5 h-5 text-amber-600" />
+        <span className="text-[10px] font-bold mt-0.5">Rashan List</span>
       </button>
 
       {/* Cart */}
