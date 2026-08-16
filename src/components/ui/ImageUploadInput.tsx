@@ -19,7 +19,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
   helpText,
   presetImages = []
 }) => {
-  const { settings, addToast } = useStore();
+  const { addToast } = useStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -74,29 +74,25 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
         img.src = base64Data;
       });
 
-      // 3. Upload to ImgBB Cloud CDN (Free Public API Key)
-      const apiKey = settings.imgbbApiKey || '6d700734741357b653733e0867f70b42'; // ImgBB API Key
-      const cleanBase64 = compressedDataUrl.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
-
+      // 3. Upload to Free Public Cloud CDN (Catbox API)
+      const resBlob = await (await fetch(compressedDataUrl)).blob();
       const formData = new FormData();
-      formData.append('key', apiKey);
-      formData.append('image', cleanBase64);
+      formData.append('reqtype', 'fileupload');
+      formData.append('fileToUpload', resBlob, `prasad_kirana_${Date.now()}.jpg`);
 
-      const res = await fetch('https://api.imgbb.com/1/upload', {
+      const res = await fetch('https://catbox.moe/user/api.php', {
         method: 'POST',
         body: formData
       });
 
-      const json = await res.json();
+      const publicUrl = (await res.text()).trim();
 
-      if (json && json.data && json.data.url) {
-        const globalPublicUrl = json.data.url;
-        onChange(globalPublicUrl);
-        addToast('Uploaded to Cloud CDN! Visible to all customers globally.', 'success');
+      if (publicUrl && publicUrl.startsWith('http')) {
+        onChange(publicUrl);
+        addToast('Uploaded to Cloud CDN! Permanent global URL created.', 'success');
       } else {
-        // Fallback to local data URL if cloud fails
         onChange(compressedDataUrl);
-        addToast('Saved image locally as fallback.', 'info');
+        addToast('Saved image as data URL.', 'info');
       }
     } catch (err) {
       console.error('Cloud upload error:', err);
