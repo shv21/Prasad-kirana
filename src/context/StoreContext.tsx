@@ -10,6 +10,7 @@ import {
   deleteAllDocuments,
   updateStoreSettings as firestoreUpdateSettings
 } from '../services/firestoreService';
+import { fetchCloudStoreData, syncStoreDataToCloud } from '../services/cloudSync';
 
 interface StoreContextType {
   settings: StoreSettings;
@@ -161,12 +162,27 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setOrders(items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
     });
 
+    // 2. Secondary Live Polling for Customer Devices (Guarantees multi-device sync across all phones & browsers)
+    const pollInterval = setInterval(async () => {
+      if (!isAdminLoggedIn) {
+        const cloudData = await fetchCloudStoreData();
+        if (cloudData) {
+          if (cloudData.settings) setSettings(cloudData.settings);
+          if (cloudData.categories && cloudData.categories.length > 0) setCategories(cloudData.categories);
+          if (cloudData.products && cloudData.products.length > 0) setProducts(cloudData.products);
+          if (cloudData.offers && cloudData.offers.length > 0) setOffers(cloudData.offers);
+          if (cloudData.orders) setOrders(cloudData.orders);
+        }
+      }
+    }, 3000);
+
     // Fallback loading timeout (ensures UI always loads within 1.5 seconds)
     const loadingTimer = setTimeout(() => {
       setIsLoading(false);
     }, 1500);
 
     return () => {
+      clearInterval(pollInterval);
       clearTimeout(loadingTimer);
       unsubSettings();
       unsubCategories();
@@ -174,7 +190,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       unsubOffers();
       unsubOrders();
     };
-  }, []);
+  }, [isAdminLoggedIn]);
+
+  // Push updated payload to Cloud REST Database whenever Admin makes changes
+  useEffect(() => {
+    if (isAdminLoggedIn) {
+      syncStoreDataToCloud({ settings, categories, products, offers, orders });
+    }
+  }, [settings, categories, products, offers, orders, isAdminLoggedIn]);
 
   useEffect(() => {
     localStorage.setItem('prasad_kirana_admin_session', isAdminLoggedIn ? 'true' : 'false');

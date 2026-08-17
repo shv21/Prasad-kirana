@@ -9,74 +9,44 @@ export interface FullStorePayload {
   lastUpdated: string;
 }
 
-// Live Cloud REST Database Endpoint for Prasad Kirana
-const CLOUD_ENDPOINT_URL = 'https://api.restful-api.dev/objects/ff8081819ff5b11001a00a8dcfaf2c19';
-
-let saveTimeout: ReturnType<typeof setTimeout> | null = null;
-
 /**
- * Fetch latest live store data from Cloud Database
+ * Local cache storage fallback
  */
 export async function fetchCloudStoreData(): Promise<FullStorePayload | null> {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const settingsStr = localStorage.getItem('prasad_kirana_settings');
+    const categoriesStr = localStorage.getItem('prasad_kirana_categories');
+    const productsStr = localStorage.getItem('prasad_kirana_products');
+    const offersStr = localStorage.getItem('prasad_kirana_offers');
+    const ordersStr = localStorage.getItem('prasad_kirana_orders');
 
-    const res = await fetch(CLOUD_ENDPOINT_URL, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!res.ok) return null;
-    const json = await res.json();
-    if (json && json.data && typeof json.data === 'object') {
-      return json.data as FullStorePayload;
+    if (settingsStr || productsStr) {
+      return {
+        settings: settingsStr ? JSON.parse(settingsStr) : undefined,
+        categories: categoriesStr ? JSON.parse(categoriesStr) : [],
+        products: productsStr ? JSON.parse(productsStr) : [],
+        offers: offersStr ? JSON.parse(offersStr) : [],
+        orders: ordersStr ? JSON.parse(ordersStr) : [],
+        lastUpdated: new Date().toISOString()
+      };
     }
     return null;
   } catch (err) {
-    // Graceful fallback to cached data if cloud is unreachable or rate limited
     return null;
   }
 }
 
 /**
- * Push updated store data to Cloud Database
+ * Persist store data to local storage
  */
 export function syncStoreDataToCloud(payload: Omit<FullStorePayload, 'lastUpdated'>): void {
-  if (saveTimeout) clearTimeout(saveTimeout);
-
-  saveTimeout = setTimeout(async () => {
-    try {
-      const fullData: FullStorePayload = {
-        ...payload,
-        lastUpdated: new Date().toISOString()
-      };
-
-      // 1. Immediate local persistence
-      localStorage.setItem('prasad_kirana_db_v1_settings', JSON.stringify(payload.settings));
-      localStorage.setItem('prasad_kirana_db_v1_categories', JSON.stringify(payload.categories));
-      localStorage.setItem('prasad_kirana_db_v1_products', JSON.stringify(payload.products));
-      localStorage.setItem('prasad_kirana_db_v1_offers', JSON.stringify(payload.offers));
-      localStorage.setItem('prasad_kirana_db_v1_orders', JSON.stringify(payload.orders));
-
-      // 2. Push to Cloud REST Database (compact payload)
-      await fetch(CLOUD_ENDPOINT_URL, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: 'prasad_kirana_live_payload',
-          data: fullData
-        })
-      });
-    } catch (err) {
-      console.warn('Cloud push notice:', err);
-    }
-  }, 1000);
+  try {
+    localStorage.setItem('prasad_kirana_settings', JSON.stringify(payload.settings));
+    localStorage.setItem('prasad_kirana_categories', JSON.stringify(payload.categories));
+    localStorage.setItem('prasad_kirana_products', JSON.stringify(payload.products));
+    localStorage.setItem('prasad_kirana_offers', JSON.stringify(payload.offers));
+    localStorage.setItem('prasad_kirana_orders', JSON.stringify(payload.orders));
+  } catch (err) {
+    console.warn('Sync notice:', err);
+  }
 }

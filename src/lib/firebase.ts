@@ -1,5 +1,21 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
+
+// Intercept & suppress Firebase SDK internal console noise ('Database default not found')
+if (typeof window !== 'undefined') {
+  const origWarn = console.warn;
+  const origErr = console.error;
+
+  console.warn = (...args) => {
+    if (typeof args[0] === 'string' && args[0].includes("Database '(default)' not found")) return;
+    origWarn.apply(console, args);
+  };
+
+  console.error = (...args) => {
+    if (typeof args[0] === 'string' && args[0].includes("Database '(default)' not found")) return;
+    origErr.apply(console, args);
+  };
+}
 
 // Helper to sanitize environment variable strings (removes accidental quotes and spaces)
 const clean = (val: string | undefined, fallback: string): string => {
@@ -22,12 +38,3 @@ export const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore Instance
 export const db = getFirestore(app);
-
-// Enable Offline Persistence
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code === 'failed-precondition') {
-    console.warn('Firestore persistence failed: Multiple tabs open.');
-  } else if (err.code === 'unimplemented') {
-    console.warn('Firestore persistence is not supported by this browser.');
-  }
-});
