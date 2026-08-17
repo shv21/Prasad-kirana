@@ -21,11 +21,21 @@ import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 
 const MainLayout: React.FC = () => {
-  const { viewMode, isAdminLoggedIn } = useStore();
+  const { viewMode, isAdminLoggedIn, isLoading } = useStore();
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
 
   if (viewMode === 'admin' && isAdminLoggedIn) {
     return <AdminDashboard />;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4">
+        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <h2 className="text-lg font-bold">Connecting to Prasad Kirana Firestore Database...</h2>
+        <p className="text-xs text-slate-400 mt-1">Loading products & live store data</p>
+      </div>
+    );
   }
 
   return (

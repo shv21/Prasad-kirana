@@ -54,30 +54,34 @@ export const OfferModal: React.FC<OfferModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (offerToEdit) {
-      updateOffer(offerToEdit.id, {
-        title,
-        subtitle,
-        discountText,
-        code,
-        bannerColor,
-        imageUrl,
-        isActive
-      });
-    } else {
-      addOffer({
-        title,
-        subtitle,
-        discountText,
-        code,
-        bannerColor,
-        imageUrl,
-        isActive
-      });
+    try {
+      if (offerToEdit) {
+        await updateOffer(offerToEdit.id, {
+          title,
+          subtitle,
+          discountText,
+          code,
+          bannerColor,
+          imageUrl,
+          isActive
+        });
+      } else {
+        await addOffer({
+          title,
+          subtitle,
+          discountText,
+          code,
+          bannerColor,
+          imageUrl,
+          isActive
+        });
+      }
+      onClose();
+    } catch (err) {
+      console.error(err);
     }
-    onClose();
   };
 
   return (

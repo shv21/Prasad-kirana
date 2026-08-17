@@ -77,8 +77,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const selectedCat = categories.find((c) => c.id === categoryId);
 
     const discountPercent = mrp > price && mrp > 0 ? Math.round(((mrp - price) / mrp) * 100) : 0;
@@ -102,13 +105,18 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       image
     };
 
-    if (productToEdit) {
-      updateProduct(productToEdit.id, payload);
-    } else {
-      addProduct(payload);
+    try {
+      if (productToEdit) {
+        await updateProduct(productToEdit.id, payload);
+      } else {
+        await addProduct(payload);
+      }
+      onClose();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    onClose();
   };
 
   return (
@@ -306,9 +314,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md disabled:opacity-50"
             >
-              {productToEdit ? 'Save Changes' : 'Add Product to Inventory'}
+              {isSubmitting ? 'Saving to Firestore...' : productToEdit ? 'Save Changes' : 'Add Product to Inventory'}
             </button>
           </div>
 

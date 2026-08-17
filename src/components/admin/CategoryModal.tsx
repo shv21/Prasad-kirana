@@ -53,26 +53,30 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (categoryToEdit) {
-      updateCategory(categoryToEdit.id, {
-        name,
-        iconName,
-        description,
-        image,
-        displayOrder: Number(displayOrder)
-      });
-    } else {
-      addCategory({
-        name,
-        iconName,
-        description,
-        image,
-        displayOrder: Number(displayOrder)
-      });
+    try {
+      if (categoryToEdit) {
+        await updateCategory(categoryToEdit.id, {
+          name,
+          iconName,
+          description,
+          image,
+          displayOrder: Number(displayOrder)
+        });
+      } else {
+        await addCategory({
+          name,
+          iconName,
+          description,
+          image,
+          displayOrder: Number(displayOrder)
+        });
+      }
+      onClose();
+    } catch (err) {
+      console.error(err);
     }
-    onClose();
   };
 
   return (

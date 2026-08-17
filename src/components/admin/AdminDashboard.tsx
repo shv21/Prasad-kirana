@@ -76,9 +76,9 @@ export const AdminDashboard: React.FC = () => {
   const pendingOrders = orders.filter((o) => o.status === 'new' || o.status === 'confirmed' || o.status === 'preparing');
   const lowStockProducts = products.filter((p) => p.stockStatus === 'low_stock' || p.stockCount <= 5);
 
-  const handleSaveSettings = (e: React.FormEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateSettings(settingsForm);
+    await updateSettings(settingsForm);
   };
 
   const filteredAdminProducts = products.filter((p) =>

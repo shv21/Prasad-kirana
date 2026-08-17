@@ -1,7 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { Product, Category, Offer, Order, StoreSettings, OrderStatus, ToastMessage } from '../types';
-import { initialStoreSettings, initialCategories, initialProducts, initialOffers, initialOrders } from '../data/mockData';
-import { fetchCloudStoreData, syncStoreDataToCloud } from '../services/cloudSync';
+import { initialStoreSettings, initialCategories, initialProducts, initialOffers } from '../data/mockData';
+import {
+  listenToCollection,
+  listenToStoreSettings,
+  setDocument,
+  updateDocument,
+  deleteDocument,
+  deleteAllDocuments,
+  updateStoreSettings as firestoreUpdateSettings
+} from '../services/firestoreService';
 
 interface StoreContextType {
   settings: StoreSettings;
@@ -9,6 +17,7 @@ interface StoreContextType {
   products: Product[];
   offers: Offer[];
   orders: Order[];
+  isLoading: boolean;
   
   // UI & Auth state
   isAdminLoggedIn: boolean;
@@ -30,23 +39,23 @@ interface StoreContextType {
   setStockOnly: (val: boolean) => void;
   setOffersOnly: (val: boolean) => void;
 
-  // CRUD Actions
-  updateSettings: (newSettings: StoreSettings) => void;
-  addProduct: (product: Omit<Product, 'id'>) => Product;
-  updateProduct: (id: string, product: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  deleteAllProducts: () => void;
-  addCategory: (category: Omit<Category, 'id'>) => Category;
-  updateCategory: (id: string, category: Partial<Category>) => void;
-  deleteCategory: (id: string) => void;
-  deleteAllCategories: () => void;
-  addOffer: (offer: Omit<Offer, 'id'>) => Offer;
-  updateOffer: (id: string, offer: Partial<Offer>) => void;
-  deleteOffer: (id: string) => void;
-  deleteAllOffers: () => void;
-  createOrder: (orderData: Omit<Order, 'id' | 'orderNumber' | 'createdAt' | 'status'>) => Order;
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
-  deleteAllOrders: () => void;
+  // Firestore Async Actions
+  updateSettings: (newSettings: StoreSettings) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<Product>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  deleteAllProducts: () => Promise<void>;
+  addCategory: (category: Omit<Category, 'id'>) => Promise<Category>;
+  updateCategory: (id: string, category: Partial<Category>) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
+  deleteAllCategories: () => Promise<void>;
+  addOffer: (offer: Omit<Offer, 'id'>) => Promise<Offer>;
+  updateOffer: (id: string, offer: Partial<Offer>) => Promise<void>;
+  deleteOffer: (id: string) => Promise<void>;
+  deleteAllOffers: () => Promise<void>;
+  createOrder: (orderData: Omit<Order, 'id' | 'orderNumber' | 'createdAt' | 'status'>) => Promise<Order>;
+  updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+  deleteAllOrders: () => Promise<void>;
   
   // Auth
   loginAdmin: (usernameOrPin: string, passwordInput?: string) => boolean;
@@ -55,42 +64,21 @@ interface StoreContextType {
   // Toasts & reset
   addToast: (text: string, type?: 'success' | 'info' | 'warning' | 'error') => void;
   removeToast: (id: string) => void;
-  resetDatabase: () => void;
+  resetDatabase: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'prasad_kirana_db_v1';
-
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load initial data from localStorage or use defaults
-  const [settings, setSettings] = useState<StoreSettings>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_settings`);
-    return saved ? JSON.parse(saved) : initialStoreSettings;
-  });
-
-  const [categories, setCategories] = useState<Category[]>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_categories`);
-    return saved ? JSON.parse(saved) : initialCategories;
-  });
-
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_products`);
-    return saved ? JSON.parse(saved) : initialProducts;
-  });
-
-  const [offers, setOffers] = useState<Offer[]>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_offers`);
-    return saved ? JSON.parse(saved) : initialOffers;
-  });
-
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_orders`);
-    return saved ? JSON.parse(saved) : initialOrders;
-  });
+  const [settings, setSettings] = useState<StoreSettings>(initialStoreSettings);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
-    return localStorage.getItem(`${LOCAL_STORAGE_KEY}_admin`) === 'true';
+    return localStorage.getItem('prasad_kirana_admin_session') === 'true';
   });
 
   const [viewMode, setViewMode] = useState<'customer' | 'admin'>('customer');
@@ -103,65 +91,66 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [offersOnly, setOffersOnly] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const [isCloudLoaded, setIsCloudLoaded] = useState(false);
-
-  // 1. Initial Live Cloud Sync Fetch on Mount & Auto-Polling for Customer Devices
+  // 1. Real-time Firebase Firestore Listeners
   useEffect(() => {
-    let isMounted = true;
+    setIsLoading(true);
 
-    async function loadCloudData() {
-      const cloudData = await fetchCloudStoreData();
-      if (cloudData && isMounted) {
-        if (cloudData.settings) {
-          setSettings(cloudData.settings);
-          localStorage.setItem(`${LOCAL_STORAGE_KEY}_settings`, JSON.stringify(cloudData.settings));
-        }
-        if (cloudData.categories) {
-          setCategories(cloudData.categories);
-          localStorage.setItem(`${LOCAL_STORAGE_KEY}_categories`, JSON.stringify(cloudData.categories));
-        }
-        if (cloudData.products) {
-          setProducts(cloudData.products);
-          localStorage.setItem(`${LOCAL_STORAGE_KEY}_products`, JSON.stringify(cloudData.products));
-        }
-        if (cloudData.offers) {
-          setOffers(cloudData.offers);
-          localStorage.setItem(`${LOCAL_STORAGE_KEY}_offers`, JSON.stringify(cloudData.offers));
-        }
-        if (cloudData.orders) {
-          setOrders(cloudData.orders);
-          localStorage.setItem(`${LOCAL_STORAGE_KEY}_orders`, JSON.stringify(cloudData.orders));
-        }
+    // Settings listener ('settings/storeConfig')
+    const unsubSettings = listenToStoreSettings((cloudSettings) => {
+      if (cloudSettings) {
+        setSettings(cloudSettings);
+      } else {
+        // Auto-seed initial settings to Firestore if empty
+        firestoreUpdateSettings(initialStoreSettings);
       }
-      if (isMounted) {
-        setIsCloudLoaded(true);
-      }
-    }
+    });
 
-    loadCloudData();
-
-    // Poll cloud database every 4 seconds on customer devices to show live admin edits automatically
-    const pollInterval = setInterval(() => {
-      if (!isAdminLoggedIn) {
-        loadCloudData();
+    // Categories listener ('categories')
+    const unsubCategories = listenToCollection<Category>('categories', (items) => {
+      if (items && items.length > 0) {
+        setCategories(items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
+      } else {
+        // Auto-seed initial categories if collection is empty
+        initialCategories.forEach((c) => setDocument('categories', c.id, c));
       }
-    }, 4000);
+    });
+
+    // Products listener ('products')
+    const unsubProducts = listenToCollection<Product>('products', (items) => {
+      if (items && items.length > 0) {
+        setProducts(items);
+      } else {
+        // Auto-seed initial products if collection is empty
+        initialProducts.forEach((p) => setDocument('products', p.id, p));
+      }
+      setIsLoading(false);
+    });
+
+    // Offers listener ('offers')
+    const unsubOffers = listenToCollection<Offer>('offers', (items) => {
+      if (items && items.length > 0) {
+        setOffers(items);
+      } else {
+        initialOffers.forEach((o) => setDocument('offers', o.id, o));
+      }
+    });
+
+    // Orders listener ('orders')
+    const unsubOrders = listenToCollection<Order>('orders', (items) => {
+      setOrders(items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+    });
 
     return () => {
-      isMounted = false;
-      clearInterval(pollInterval);
+      unsubSettings();
+      unsubCategories();
+      unsubProducts();
+      unsubOffers();
+      unsubOrders();
     };
-  }, [isAdminLoggedIn]);
-
-  // 2. Push Cloud Sync ONLY when Admin is LOGGED IN (Prevents customer devices from overwriting cloud DB!)
-  useEffect(() => {
-    if (isCloudLoaded && isAdminLoggedIn) {
-      syncStoreDataToCloud({ settings, categories, products, offers, orders });
-    }
-  }, [settings, categories, products, offers, orders, isCloudLoaded, isAdminLoggedIn]);
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_admin`, isAdminLoggedIn ? 'true' : 'false');
+    localStorage.setItem('prasad_kirana_admin_session', isAdminLoggedIn ? 'true' : 'false');
   }, [isAdminLoggedIn]);
 
   // Toast Handler
@@ -177,134 +166,195 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Actions
-  const updateSettings = (newSettings: StoreSettings) => {
-    setSettings(newSettings);
-    addToast('Store settings updated successfully!');
+  // Firestore Actions
+  const updateSettings = async (newSettings: StoreSettings) => {
+    try {
+      await firestoreUpdateSettings(newSettings);
+      addToast('Store settings updated live across all devices!', 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to update store settings.', 'error');
+    }
   };
 
-  const addProduct = (productData: Omit<Product, 'id'>) => {
+  const addProduct = async (productData: Omit<Product, 'id'>) => {
+    const id = `p-${Date.now()}`;
     const newProduct: Product = {
       ...productData,
-      id: `p-${Date.now()}`
+      id
     };
-    setProducts((prev) => [newProduct, ...prev]);
-    addToast(`Added product "${newProduct.name}"`);
+    try {
+      await setDocument('products', id, newProduct);
+      addToast(`Added product "${newProduct.name}" to cloud!`, 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to add product.', 'error');
+    }
     return newProduct;
   };
 
-  const updateProduct = (id: string, productData: Partial<Product>) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...productData } : p))
-    );
-    addToast('Product details updated');
+  const updateProduct = async (id: string, productData: Partial<Product>) => {
+    try {
+      await updateDocument('products', id, productData);
+      addToast('Product updated live!', 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to update product.', 'error');
+    }
   };
 
-  const deleteProduct = (id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-    addToast('Product deleted', 'warning');
+  const deleteProduct = async (id: string) => {
+    try {
+      await deleteDocument('products', id);
+      addToast('Product deleted from Firestore.', 'warning');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to delete product.', 'error');
+    }
   };
 
-  const deleteAllProducts = () => {
-    setProducts([]);
-    addToast('All products deleted from inventory', 'warning');
+  const deleteAllProducts = async () => {
+    try {
+      await deleteAllDocuments('products');
+      addToast('All products deleted from inventory.', 'warning');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to delete products.', 'error');
+    }
   };
 
-  const addCategory = (catData: Omit<Category, 'id'>) => {
+  const addCategory = async (catData: Omit<Category, 'id'>) => {
+    const id = `cat-${Date.now()}`;
     const newCat: Category = {
       ...catData,
-      id: `cat-${Date.now()}`
+      id
     };
-    setCategories((prev) => [...prev, newCat]);
-    addToast(`Added category "${newCat.name}"`);
+    try {
+      await setDocument('categories', id, newCat);
+      addToast(`Added category "${newCat.name}"`, 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to add category.', 'error');
+    }
     return newCat;
   };
 
-  const updateCategory = (id: string, catData: Partial<Category>) => {
-    setCategories((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...catData } : c))
-    );
-    addToast('Category updated');
+  const updateCategory = async (id: string, catData: Partial<Category>) => {
+    try {
+      await updateDocument('categories', id, catData);
+      addToast('Category updated live!', 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to update category.', 'error');
+    }
   };
 
-  const deleteCategory = (id: string) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
-    addToast('Category deleted', 'warning');
+  const deleteCategory = async (id: string) => {
+    try {
+      await deleteDocument('categories', id);
+      addToast('Category deleted', 'warning');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to delete category.', 'error');
+    }
   };
 
-  const deleteAllCategories = () => {
-    setCategories([]);
-    addToast('All categories deleted', 'warning');
+  const deleteAllCategories = async () => {
+    try {
+      await deleteAllDocuments('categories');
+      addToast('All categories deleted', 'warning');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to delete categories.', 'error');
+    }
   };
 
-  const addOffer = (offData: Omit<Offer, 'id'>) => {
+  const addOffer = async (offerData: Omit<Offer, 'id'>) => {
+    const id = `off-${Date.now()}`;
     const newOffer: Offer = {
-      ...offData,
-      id: `off-${Date.now()}`
+      ...offerData,
+      id
     };
-    setOffers((prev) => [newOffer, ...prev]);
-    addToast('New promotional offer created');
+    try {
+      await setDocument('offers', id, newOffer);
+      addToast(`Added offer "${newOffer.title}"`, 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to add offer.', 'error');
+    }
     return newOffer;
   };
 
-  const updateOffer = (id: string, offData: Partial<Offer>) => {
-    setOffers((prev) =>
-      prev.map((o) => (o.id === id ? { ...o, ...offData } : o))
-    );
-    addToast('Offer updated');
+  const updateOffer = async (id: string, offerData: Partial<Offer>) => {
+    try {
+      await updateDocument('offers', id, offerData);
+      addToast('Offer updated live!', 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to update offer.', 'error');
+    }
   };
 
-  const deleteOffer = (id: string) => {
-    setOffers((prev) => prev.filter((o) => o.id !== id));
-    addToast('Offer deleted', 'warning');
+  const deleteOffer = async (id: string) => {
+    try {
+      await deleteDocument('offers', id);
+      addToast('Offer deleted', 'warning');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to delete offer.', 'error');
+    }
   };
 
-  const deleteAllOffers = () => {
-    setOffers([]);
-    addToast('All promotional offers deleted', 'warning');
+  const deleteAllOffers = async () => {
+    try {
+      await deleteAllDocuments('offers');
+      addToast('All offers deleted', 'warning');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to delete offers.', 'error');
+    }
   };
 
-  const createOrder = (orderData: Omit<Order, 'id' | 'orderNumber' | 'createdAt' | 'status'>) => {
-    const nextOrderNum = 1000 + orders.length + 1;
+  const createOrder = async (
+    orderData: Omit<Order, 'id' | 'orderNumber' | 'createdAt' | 'status'>
+  ) => {
+    const orderNum = `PKS-${Math.floor(1000 + Math.random() * 9000)}`;
+    const id = `ord-${Date.now()}`;
     const newOrder: Order = {
       ...orderData,
-      id: `ord-${Date.now()}`,
-      orderNumber: `PKS-${nextOrderNum}`,
+      id,
+      orderNumber: orderNum,
       status: 'new',
       createdAt: new Date().toISOString()
     };
-    setOrders((prev) => [newOrder, ...prev]);
-
-    // Reduce stock counts automatically
-    setProducts((prevProducts) =>
-      prevProducts.map((p) => {
-        const itemInOrder = orderData.items.find((i) => i.productId === p.id);
-        if (itemInOrder) {
-          const newCount = Math.max(0, p.stockCount - itemInOrder.quantity);
-          return {
-            ...p,
-            stockCount: newCount,
-            stockStatus: newCount === 0 ? 'out_of_stock' : newCount < 5 ? 'low_stock' : 'in_stock'
-          };
-        }
-        return p;
-      })
-    );
-
-    addToast(`Order ${newOrder.orderNumber} placed successfully!`, 'success');
+    try {
+      await setDocument('orders', id, newOrder);
+      addToast(`Order ${newOrder.orderNumber} placed successfully!`, 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to place order.', 'error');
+    }
     return newOrder;
   };
 
-  const updateOrderStatus = (orderId: string, status: OrderStatus) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status } : o))
-    );
-    addToast(`Order status changed to ${status.replace('_', ' ').toUpperCase()}`);
+  const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
+    try {
+      await updateDocument('orders', orderId, { status });
+      addToast(`Order status changed to ${status.replace('_', ' ').toUpperCase()}`);
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to update order status.', 'error');
+    }
   };
 
-  const deleteAllOrders = () => {
-    setOrders([]);
-    addToast('All order records cleared', 'warning');
+  const deleteAllOrders = async () => {
+    try {
+      await deleteAllDocuments('orders');
+      addToast('All order records cleared', 'warning');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to clear orders.', 'error');
+    }
   };
 
   const loginAdmin = (usernameOrPin: string, passwordInput?: string) => {
@@ -312,7 +362,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const validPassword = settings.adminPassword || 'abhimanyu.jadhav';
     const validPin = settings.adminPin || '7499047152';
 
-    // If both username and password provided
     if (passwordInput !== undefined && passwordInput !== null && passwordInput.length > 0) {
       const u = usernameOrPin.trim().toLowerCase();
       if ((u === validUsername && passwordInput === validPassword) || passwordInput === validPin) {
@@ -322,7 +371,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return true;
       }
     } else {
-      // Single input passcode / password / PIN check
       const input = usernameOrPin.trim();
       if (input === validPassword || input === validPin || input === 'admin123' || input === '7499047152' || input.toLowerCase() === validUsername) {
         setIsAdminLoggedIn(true);
@@ -342,13 +390,22 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast('Logged out of Admin Dashboard', 'info');
   };
 
-  const resetDatabase = () => {
-    setSettings(initialStoreSettings);
-    setCategories(initialCategories);
-    setProducts(initialProducts);
-    setOffers(initialOffers);
-    setOrders(initialOrders);
-    addToast('Database reset to original Prasad Kirana sample records', 'info');
+  const resetDatabase = async () => {
+    try {
+      await firestoreUpdateSettings(initialStoreSettings);
+      await deleteAllDocuments('categories');
+      await deleteAllDocuments('products');
+      await deleteAllDocuments('offers');
+      
+      initialCategories.forEach((c) => setDocument('categories', c.id, c));
+      initialProducts.forEach((p) => setDocument('products', p.id, p));
+      initialOffers.forEach((o) => setDocument('offers', o.id, o));
+      
+      addToast('Firestore database reset to original sample records', 'info');
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to reset database.', 'error');
+    }
   };
 
   return (
@@ -359,6 +416,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         products,
         offers,
         orders,
+        isLoading,
         isAdminLoggedIn,
         viewMode,
         adminTab,
