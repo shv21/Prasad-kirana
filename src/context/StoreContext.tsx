@@ -124,12 +124,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Settings listener ('settings/storeConfig')
     const unsubSettings = listenToStoreSettings((cloudSettings) => {
-      if (cloudSettings) {
+      if (cloudSettings && Object.keys(cloudSettings).length > 0) {
         setSettings(cloudSettings);
         saveLocal('prasad_kirana_settings', cloudSettings);
-      } else {
-        // Seed current settings to Firestore if document does not exist yet
-        firestoreUpdateSettings(settings);
       }
     });
 
@@ -139,8 +136,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const sorted = items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
         setCategories(sorted);
         saveLocal('prasad_kirana_categories', sorted);
-      } else {
-        initialCategories.forEach((c) => setDocument('categories', c.id, c));
       }
     });
 
@@ -149,8 +144,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (items && items.length > 0) {
         setProducts(items);
         saveLocal('prasad_kirana_products', items);
-      } else {
-        initialProducts.forEach((p) => setDocument('products', p.id, p));
       }
       setIsLoading(false);
     });
@@ -160,8 +153,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (items && items.length > 0) {
         setOffers(items);
         saveLocal('prasad_kirana_offers', items);
-      } else {
-        initialOffers.forEach((o) => setDocument('offers', o.id, o));
       }
     });
 
