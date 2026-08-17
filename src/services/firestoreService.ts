@@ -19,20 +19,24 @@ export function listenToCollection<T>(
   collectionName: string,
   callback: (items: T[]) => void
 ): () => void {
-  const colRef = collection(db, collectionName);
-  return onSnapshot(
-    colRef,
-    (snapshot) => {
-      const items: T[] = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      })) as unknown as T[];
-      callback(items);
-    },
-    (err) => {
-      console.error(`Error listening to collection ${collectionName}:`, err);
-    }
-  );
+  try {
+    const colRef = collection(db, collectionName);
+    return onSnapshot(
+      colRef,
+      (snapshot) => {
+        const items: T[] = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data()
+        })) as unknown as T[];
+        callback(items);
+      },
+      () => {
+        // Silently ignore configuration or database lookup errors
+      }
+    );
+  } catch (err) {
+    return () => {};
+  }
 }
 
 /**
@@ -41,20 +45,24 @@ export function listenToCollection<T>(
 export function listenToStoreSettings(
   callback: (settings: StoreSettings | null) => void
 ): () => void {
-  const settingsDocRef = doc(db, 'settings', 'storeConfig');
-  return onSnapshot(
-    settingsDocRef,
-    (docSnap) => {
-      if (docSnap.exists()) {
-        callback(docSnap.data() as StoreSettings);
-      } else {
-        callback(null);
+  try {
+    const settingsDocRef = doc(db, 'settings', 'storeConfig');
+    return onSnapshot(
+      settingsDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          callback(docSnap.data() as StoreSettings);
+        } else {
+          callback(null);
+        }
+      },
+      () => {
+        // Silently ignore configuration or database lookup errors
       }
-    },
-    (err) => {
-      console.error('Error listening to store settings:', err);
-    }
-  );
+    );
+  } catch (err) {
+    return () => {};
+  }
 }
 
 /**
