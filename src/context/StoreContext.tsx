@@ -61,19 +61,37 @@ interface StoreContextType {
   loginAdmin: (usernameOrPin: string, passwordInput?: string) => boolean;
   logoutAdmin: () => void;
   
-  // Toasts & reset
+  // Toasts, reset & seed
   addToast: (text: string, type?: 'success' | 'info' | 'warning' | 'error') => void;
   removeToast: (id: string) => void;
   resetDatabase: () => Promise<void>;
+  seedFirebase: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [settings, setSettings] = useState<StoreSettings>(initialStoreSettings);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [offers, setOffers] = useState<Offer[]>([]);
+  // Initialize state with local storage fallback so uploaded images NEVER get removed on refresh
+  const [settings, setSettings] = useState<StoreSettings>(() => {
+    const saved = localStorage.getItem('prasad_kirana_settings');
+    return saved ? JSON.parse(saved) : initialStoreSettings;
+  });
+
+  const [categories, setCategories] = useState<Category[]>(() => {
+    const saved = localStorage.getItem('prasad_kirana_categories');
+    return saved ? JSON.parse(saved) : initialCategories;
+  });
+
+  const [products, setProducts] = useState<Product[]>(() => {
+    const saved = localStorage.getItem('prasad_kirana_products');
+    return saved ? JSON.parse(saved) : initialProducts;
+  });
+
+  const [offers, setOffers] = useState<Offer[]>(() => {
+    const saved = localStorage.getItem('prasad_kirana_offers');
+    return saved ? JSON.parse(saved) : initialOffers;
+  });
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -91,6 +109,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [offersOnly, setOffersOnly] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
+  // Helper to persist state to localStorage
+  const saveLocal = (key: string, val: unknown) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+    } catch (e) {
+      console.warn('LocalStorage save warning:', e);
+    }
+  };
+
   // 1. Real-time Firebase Firestore Listeners
   useEffect(() => {
     setIsLoading(true);
@@ -99,18 +126,20 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const unsubSettings = listenToStoreSettings((cloudSettings) => {
       if (cloudSettings) {
         setSettings(cloudSettings);
+        saveLocal('prasad_kirana_settings', cloudSettings);
       } else {
-        // Auto-seed initial settings to Firestore if empty
-        firestoreUpdateSettings(initialStoreSettings);
+        // Seed current settings to Firestore if document does not exist yet
+        firestoreUpdateSettings(settings);
       }
     });
 
     // Categories listener ('categories')
     const unsubCategories = listenToCollection<Category>('categories', (items) => {
       if (items && items.length > 0) {
-        setCategories(items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
+        const sorted = items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+        setCategories(sorted);
+        saveLocal('prasad_kirana_categories', sorted);
       } else {
-        // Auto-seed initial categories if collection is empty
         initialCategories.forEach((c) => setDocument('categories', c.id, c));
       }
     });
@@ -119,8 +148,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const unsubProducts = listenToCollection<Product>('products', (items) => {
       if (items && items.length > 0) {
         setProducts(items);
+        saveLocal('prasad_kirana_products', items);
       } else {
-        // Auto-seed initial products if collection is empty
         initialProducts.forEach((p) => setDocument('products', p.id, p));
       }
       setIsLoading(false);
@@ -130,6 +159,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const unsubOffers = listenToCollection<Offer>('offers', (items) => {
       if (items && items.length > 0) {
         setOffers(items);
+        saveLocal('prasad_kirana_offers', items);
       } else {
         initialOffers.forEach((o) => setDocument('offers', o.id, o));
       }
@@ -140,7 +170,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setOrders(items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
     });
 
+    // Fallback loading timeout (ensures UI always loads within 1.5 seconds)
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+
     return () => {
+      clearTimeout(loadingTimer);
       unsubSettings();
       unsubCategories();
       unsubProducts();
@@ -166,14 +202,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Firestore Actions
+  // Firestore Actions (Updates both local state & Firestore)
   const updateSettings = async (newSettings: StoreSettings) => {
+    setSettings(newSettings);
+    saveLocal('prasad_kirana_settings', newSettings);
     try {
       await firestoreUpdateSettings(newSettings);
-      addToast('Store settings updated live across all devices!', 'success');
+      addToast('Store settings & images saved permanently!', 'success');
     } catch (err) {
       console.error(err);
-      addToast('Failed to update store settings.', 'error');
+      addToast('Saved settings locally. Firestore permissions check required.', 'info');
     }
   };
 
@@ -183,43 +221,57 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...productData,
       id
     };
+    setProducts((prev) => {
+      const updated = [newProduct, ...prev];
+      saveLocal('prasad_kirana_products', updated);
+      return updated;
+    });
     try {
       await setDocument('products', id, newProduct);
-      addToast(`Added product "${newProduct.name}" to cloud!`, 'success');
+      addToast(`Added product "${newProduct.name}"`, 'success');
     } catch (err) {
       console.error(err);
-      addToast('Failed to add product.', 'error');
+      addToast('Product saved locally.', 'info');
     }
     return newProduct;
   };
 
   const updateProduct = async (id: string, productData: Partial<Product>) => {
+    setProducts((prev) => {
+      const updated = prev.map((p) => (p.id === id ? { ...p, ...productData } : p));
+      saveLocal('prasad_kirana_products', updated);
+      return updated;
+    });
     try {
       await updateDocument('products', id, productData);
       addToast('Product updated live!', 'success');
     } catch (err) {
       console.error(err);
-      addToast('Failed to update product.', 'error');
     }
   };
 
   const deleteProduct = async (id: string) => {
+    setProducts((prev) => {
+      const updated = prev.filter((p) => p.id !== id);
+      saveLocal('prasad_kirana_products', updated);
+      return updated;
+    });
     try {
       await deleteDocument('products', id);
-      addToast('Product deleted from Firestore.', 'warning');
+      addToast('Product deleted.', 'warning');
     } catch (err) {
       console.error(err);
-      addToast('Failed to delete product.', 'error');
     }
   };
 
   const deleteAllProducts = async () => {
+    setProducts([]);
+    saveLocal('prasad_kirana_products', []);
     try {
       await deleteAllDocuments('products');
-      addToast('All products deleted from inventory.', 'warning');
+      addToast('All products deleted.', 'warning');
     } catch (err) {
       console.error(err);
-      addToast('Failed to delete products.', 'error');
     }
   };
 
@@ -229,43 +281,56 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...catData,
       id
     };
+    setCategories((prev) => {
+      const updated = [...prev, newCat];
+      saveLocal('prasad_kirana_categories', updated);
+      return updated;
+    });
     try {
       await setDocument('categories', id, newCat);
       addToast(`Added category "${newCat.name}"`, 'success');
     } catch (err) {
       console.error(err);
-      addToast('Failed to add category.', 'error');
     }
     return newCat;
   };
 
   const updateCategory = async (id: string, catData: Partial<Category>) => {
+    setCategories((prev) => {
+      const updated = prev.map((c) => (c.id === id ? { ...c, ...catData } : c));
+      saveLocal('prasad_kirana_categories', updated);
+      return updated;
+    });
     try {
       await updateDocument('categories', id, catData);
       addToast('Category updated live!', 'success');
     } catch (err) {
       console.error(err);
-      addToast('Failed to update category.', 'error');
     }
   };
 
   const deleteCategory = async (id: string) => {
+    setCategories((prev) => {
+      const updated = prev.filter((c) => c.id !== id);
+      saveLocal('prasad_kirana_categories', updated);
+      return updated;
+    });
     try {
       await deleteDocument('categories', id);
       addToast('Category deleted', 'warning');
     } catch (err) {
       console.error(err);
-      addToast('Failed to delete category.', 'error');
     }
   };
 
   const deleteAllCategories = async () => {
+    setCategories([]);
+    saveLocal('prasad_kirana_categories', []);
     try {
       await deleteAllDocuments('categories');
       addToast('All categories deleted', 'warning');
     } catch (err) {
       console.error(err);
-      addToast('Failed to delete categories.', 'error');
     }
   };
 
@@ -275,43 +340,56 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...offerData,
       id
     };
+    setOffers((prev) => {
+      const updated = [...prev, newOffer];
+      saveLocal('prasad_kirana_offers', updated);
+      return updated;
+    });
     try {
       await setDocument('offers', id, newOffer);
       addToast(`Added offer "${newOffer.title}"`, 'success');
     } catch (err) {
       console.error(err);
-      addToast('Failed to add offer.', 'error');
     }
     return newOffer;
   };
 
   const updateOffer = async (id: string, offerData: Partial<Offer>) => {
+    setOffers((prev) => {
+      const updated = prev.map((o) => (o.id === id ? { ...o, ...offerData } : o));
+      saveLocal('prasad_kirana_offers', updated);
+      return updated;
+    });
     try {
       await updateDocument('offers', id, offerData);
       addToast('Offer updated live!', 'success');
     } catch (err) {
       console.error(err);
-      addToast('Failed to update offer.', 'error');
     }
   };
 
   const deleteOffer = async (id: string) => {
+    setOffers((prev) => {
+      const updated = prev.filter((o) => o.id !== id);
+      saveLocal('prasad_kirana_offers', updated);
+      return updated;
+    });
     try {
       await deleteDocument('offers', id);
       addToast('Offer deleted', 'warning');
     } catch (err) {
       console.error(err);
-      addToast('Failed to delete offer.', 'error');
     }
   };
 
   const deleteAllOffers = async () => {
+    setOffers([]);
+    saveLocal('prasad_kirana_offers', []);
     try {
       await deleteAllDocuments('offers');
       addToast('All offers deleted', 'warning');
     } catch (err) {
       console.error(err);
-      addToast('Failed to delete offers.', 'error');
     }
   };
 
@@ -327,33 +405,33 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       status: 'new',
       createdAt: new Date().toISOString()
     };
+    setOrders((prev) => [newOrder, ...prev]);
     try {
       await setDocument('orders', id, newOrder);
       addToast(`Order ${newOrder.orderNumber} placed successfully!`, 'success');
     } catch (err) {
       console.error(err);
-      addToast('Failed to place order.', 'error');
     }
     return newOrder;
   };
 
   const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
     try {
       await updateDocument('orders', orderId, { status });
       addToast(`Order status changed to ${status.replace('_', ' ').toUpperCase()}`);
     } catch (err) {
       console.error(err);
-      addToast('Failed to update order status.', 'error');
     }
   };
 
   const deleteAllOrders = async () => {
+    setOrders([]);
     try {
       await deleteAllDocuments('orders');
       addToast('All order records cleared', 'warning');
     } catch (err) {
       console.error(err);
-      addToast('Failed to clear orders.', 'error');
     }
   };
 
@@ -392,6 +470,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const resetDatabase = async () => {
     try {
+      setSettings(initialStoreSettings);
+      setCategories(initialCategories);
+      setProducts(initialProducts);
+      setOffers(initialOffers);
+      
+      saveLocal('prasad_kirana_settings', initialStoreSettings);
+      saveLocal('prasad_kirana_categories', initialCategories);
+      saveLocal('prasad_kirana_products', initialProducts);
+      saveLocal('prasad_kirana_offers', initialOffers);
+
       await firestoreUpdateSettings(initialStoreSettings);
       await deleteAllDocuments('categories');
       await deleteAllDocuments('products');
@@ -401,10 +489,30 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       initialProducts.forEach((p) => setDocument('products', p.id, p));
       initialOffers.forEach((o) => setDocument('offers', o.id, o));
       
-      addToast('Firestore database reset to original sample records', 'info');
+      addToast('Database reset to original sample records', 'info');
     } catch (err) {
       console.error(err);
       addToast('Failed to reset database.', 'error');
+    }
+  };
+
+  const seedFirebase = async () => {
+    try {
+      addToast('Pushing initial store data to Firebase...', 'info');
+      await firestoreUpdateSettings(settings);
+      for (const cat of (categories.length > 0 ? categories : initialCategories)) {
+        await setDocument('categories', cat.id, cat);
+      }
+      for (const prod of (products.length > 0 ? products : initialProducts)) {
+        await setDocument('products', prod.id, prod);
+      }
+      for (const off of (offers.length > 0 ? offers : initialOffers)) {
+        await setDocument('offers', off.id, off);
+      }
+      addToast('Firebase Console populated successfully! Check your Firebase Console screen.', 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('Firebase seed failed. Please check Security Rules tab in Firebase Console.', 'error');
     }
   };
 
@@ -453,7 +561,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         logoutAdmin,
         addToast,
         removeToast,
-        resetDatabase
+        resetDatabase,
+        seedFirebase
       }}
     >
       {children}

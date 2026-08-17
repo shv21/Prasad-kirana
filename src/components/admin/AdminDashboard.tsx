@@ -42,6 +42,7 @@ export const AdminDashboard: React.FC = () => {
     updateSettings,
     logoutAdmin,
     resetDatabase,
+    seedFirebase,
     setViewMode
   } = useStore();
 
@@ -712,12 +713,19 @@ export const AdminDashboard: React.FC = () => {
         {adminTab === 'settings' && (
           <div className="space-y-6 animate-fade-in">
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs max-w-3xl">
-              <h3 className="text-base font-extrabold text-slate-900 mb-1">
-                Storefront Information & Settings
-              </h3>
-              <p className="text-xs text-slate-500 mb-6">
-                Update shop details, contact phone, WhatsApp number, minimum order values, and delivery charges without editing code.
-              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 p-4 bg-slate-900 text-white rounded-2xl">
+                <div>
+                  <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-0.5">Firebase Cloud Sync</h4>
+                  <p className="text-xs text-slate-300">Populate all products, categories & settings to your Firebase Console database.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={seedFirebase}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold rounded-xl shadow-md transition-all shrink-0 cursor-pointer"
+                >
+                  ⚡ Push All Data to Firebase Console
+                </button>
+              </div>
 
               <form onSubmit={handleSaveSettings} className="space-y-4">
                 
